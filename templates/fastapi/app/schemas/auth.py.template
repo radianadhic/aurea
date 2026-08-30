@@ -1,0 +1,21 @@
+"""Authentication schemas."""
+from typing import Optional
+from pydantic import BaseModel, Field
+
+
+class UserInfo(BaseModel):
+    """Authenticated user information."""
+    id: str = Field(..., description="User UUID")
+    username: str = Field(..., description="Username")
+    email: Optional[str] = Field(None, description="Email")
+    full_name: Optional[str] = Field(None, description="Full name")
+    employee_id: Optional[str] = Field(None, description="Employee ID")
+    branch_id: Optional[str] = Field(None, description="Branch ID")
+    roles: list[str] = Field(default_factory=list, description="Realm roles")
+
+
+class TokenValidationResponse(BaseModel):
+    """Token validation result."""
+    valid: bool
+    user_id: Optional[str] = None
+    username: Optional[str] = None

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AUREA — Loading Spinners</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0A1929;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    font-family: Georgia, serif;
+    font-size: 36px;
+    background: linear-gradient(135deg, #FFD764, #D4AF37, #B8860B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #8FA5BD;
+    letter-spacing: 4px;
+    font-size: 12px;
+    margin-bottom: 60px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+  }
+  .card h3 {
+    color: #D4AF37;
+    font-size: 16px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .card .desc {
+    color: #8FA5BD;
+    font-size: 12px;
+    margin-bottom: 24px;
+    min-height: 32px;
+  }
+  .demo {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .code {
+    background: rgba(0,0,0,0.4);
+    color: #8FA5BD;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    text-align: left;
+    word-break: break-all;
+  }
+
+  /* === SPINNER 1: Rotating A === */
+  .spinner-a {
+    width: 60px; height: 60px;
+    position: relative;
+  }
+  .spinner-a::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: conic-gradient(from 0deg, transparent 0%, #D4AF37 50%, transparent 100%);
+    border-radius: 50%;
+    animation: rotate 1.5s linear infinite;
+    mask: radial-gradient(circle, transparent 50%, black 51%);
+    -webkit-mask: radial-gradient(circle, transparent 50%, black 51%);
+  }
+  .spinner-a::after {
+    content: 'A';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #D4AF37;
+  }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+
+  /* === SPINNER 2: Three Dots Pulse (MD3G) === */
+  .spinner-dots {
+    display: flex; gap: 10px;
+  }
+  .spinner-dots span {
+    width: 14px; height: 14px;
+    background: #D4AF37;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(212,175,55,0.6);
+    animation: dotBounce 1.4s ease-in-out infinite;
+  }
+  .spinner-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .spinner-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1.2); opacity: 1; }
+  }
+
+  /* === SPINNER 3: Gold Ring === */
+  .spinner-ring {
+    width: 50px; height: 50px;
+    border: 4px solid rgba(212, 175, 55, 0.15);
+    border-top-color: #D4AF37;
+    border-right-color: #FFD764;
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
+  }
+
+  /* === SPINNER 4: Pulsing Circle (logo mark) === */
+  .spinner-pulse {
+    width: 60px; height: 60px;
+    background: #0A1929;
+    border: 2px solid #D4AF37;
+    border-radius: 50%;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 20px rgba(212,175,55,0.3);
+  }
+  .spinner-pulse::before {
+    content: '';
+    width: 0; height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 26px solid #D4AF37;
+  }
+  .spinner-pulse::after {
+    content: '';
+    position: absolute; inset: -8px;
+    border: 1px solid #D4AF37;
+    border-radius: 50%;
+    animation: pulseRing 1.5s ease-out infinite;
+  }
+  @keyframes pulseRing {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  /* === SPINNER 5: Horizontal Bar === */
+  .spinner-bar {
+    width: 200px; height: 4px;
+    background: rgba(212,175,55,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .spinner-bar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -40%;
+    width: 40%; height: 100%;
+    background: linear-gradient(90deg, transparent, #FFD764, #D4AF37, transparent);
+    border-radius: 2px;
+    animation: barSlide 1.5s ease-in-out infinite;
+  }
+  @keyframes barSlide {
+    0% { left: -40%; } 100% { left: 100%; }
+  }
+
+  /* === SPINNER 6: Gold Gradient Sweep === */
+  .spinner-sweep {
+    width: 60px; height: 60px;
+    position: relative;
+    background: conic-gradient(
+      from 0deg,
+      #FFD764 0deg,
+      #D4AF37 90deg,
+      transparent 90deg
+    );
+    border-radius: 50%;
+    animation: rotate 1.2s linear infinite;
+    mask: radial-gradient(circle, transparent 55%, black 56%);
+    -webkit-mask: radial-gradient(circle, transparent 55%, black 56%);
+  }
+
+  /* === SPINNER 7: AUREA Text === */
+  .spinner-text {
+    font-family: Georgia, serif;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    color: #D4AF37;
+    animation: textFlicker 1.6s ease-in-out infinite;
+  }
+  @keyframes textFlicker {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; text-shadow: 0 0 20px rgba(212,175,55,0.6); }
+  }
+
+  /* === SPINNER 8: Orbit Dots === */
+  .spinner-orbit {
+    width: 60px; height: 60px;
+    position: relative;
+  }
+  .spinner-orbit::before {
+    content: '';
+    position: absolute; inset: 0;
+    border: 1px dashed rgba(212,175,55,0.3);
+    border-radius: 50%;
+    animation: rotate 3s linear infinite;
+  }
+  .spinner-orbit span {
+    position: absolute;
+    top: 50%; left: 0;
+    width: 10px; height: 10px;
+    background: #D4AF37;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(212,175,55,0.8);
+    transform: translateY(-50%);
+    animation: orbit 2s linear infinite;
+  }
+  @keyframes orbit { to { transform: translateY(-50%) rotate(360deg) translateX(30px) rotate(-360deg); } }
+
+  .copy-hint {
+    text-align: center;
+    color: #4A6580;
+    font-size: 11px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<h1>AUREA Loading Spinners</h1>
+<p class="subtitle">8 BRAND-MATCHED LOADING STATES</p>
+
+<div class="grid">
+
+  <div class="card">
+    <h3>1. Rotating A</h3>
+    <p class="desc">The A letter in a rotating gold ring</p>
+    <div class="demo"><div class="spinner-a"></div></div>
+    <div class="code">.spinner-a { animation: rotate }</div>
+  </div>
+
+  <div class="card">
+    <h3>2. MD3G Dots</h3>
+    <p class="desc">Three pulsing dots = 3 Golden Data</p>
+    <div class="demo">
+      <div class="spinner-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="code">.spinner-dots span { delay: 0.2s }</div>
+  </div>
+
+  <div class="card">
+    <h3>3. Gold Ring</h3>
+    <p class="desc">Classic spinner, gold gradient</p>
+    <div class="demo"><div class="spinner-ring"></div></div>
+    <div class="code">border-top-color: #D4AF37</div>
+  </div>
+
+  <div class="card">
+    <h3>4. Logo Pulse</h3>
+    <p class="desc">Logo mark with pulsing ring</p>
+    <div class="demo"><div class="spinner-pulse"></div></div>
+    <div class="code">box-shadow: 0 0 20px gold</div>
+  </div>
+
+  <div class="card">
+    <h3>5. Progress Bar</h3>
+    <p class="desc">Horizontal indeterminate bar</p>
+    <div class="demo"><div class="spinner-bar"></div></div>
+    <div class="code">.spinner-bar::before { slide }</div>
+  </div>
+
+  <div class="card">
+    <h3>6. Gradient Sweep</h3>
+    <p class="desc">90° gold arc, rotates fast</p>
+    <div class="demo"><div class="spinner-sweep"></div></div>
+    <div class="code">conic-gradient + mask</div>
+  </div>
+
+  <div class="card">
+    <h3>7. AUREA Flicker</h3>
+    <p class="desc">Brand name opacity pulse</p>
+    <div class="demo"><div class="spinner-text">AUREA</div></div>
+    <div class="code">@keyframes textFlicker</div>
+  </div>
+
+  <div class="card">
+    <h3>8. Orbit Dot</h3>
+    <p class="desc">Single dot orbiting center</p>
+    <div class="demo">
+      <div class="spinner-orbit"><span></span></div>
+    </div>
+    <div class="code">rotate 360deg + translateX</div>
+  </div>
+
+</div>
+
+<p class="copy-hint">All spinners use only AUREA brand colors: #D4AF37, #FFD764, #B8860B, #0A1929</p>
+
+</body>
+</html>

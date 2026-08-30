@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - MDM Admin</title>
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="dashboardPage()" x-init="init()">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Dashboard</h1>
+        <p class="text-sm text-gray-500">Real-time overview of MDM system</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="/insights.html" class="btn btn-ghost btn-sm gap-1 text-gold-dark hover:bg-gold/10">
+          <span>🧠</span><span>Auto-Insights</span>
+        </a>
+        <span class="text-xs text-gray-500">Last updated:</span>
+        <span class="text-sm font-medium" x-text="lastUpdated"></span>
+        <button @click="refresh()" class="btn btn-ghost btn-sm">
+          <svg class="h-4 w-4" :class="loading ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- Total CIF -->
+      <div class="card-stat" x-data="statCard({
+        label: 'Total CIF',
+        endpoint: '/api/v1/customers/stats/total',
+        icon: 'users',
+        color: 'primary',
+        value: '12,345,678'
+      })">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="stat-label">Total CIF</p>
+            <p class="stat-value" x-text="value"></p>
+            <p class="mt-1 text-xs" :class="trend === 'up' ? 'stat-trend-up' : 'stat-trend-down'">
+              <span x-show="trend === 'up'">↑</span>
+              <span x-show="trend === 'down'">↓</span>
+              <span x-text="trendValue + '% vs last month'"></span>
+            </p>
+          </div>
+          <div class="rounded-md bg-primary/10 p-3">
+            <svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Transactions -->
+      <div class="card-stat" x-data="statCard({
+        label: 'Transaksi Hari Ini',
+        endpoint: '/api/v1/transactions/stats/today',
+        icon: 'trending',
+        color: 'success',
+        value: '1,234,567'
+      })">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="stat-label">Transaksi Hari Ini</p>
+            <p class="stat-value" x-text="value"></p>
+            <p class="mt-1 text-xs stat-trend-up">
+              ↑ 12% vs yesterday
+            </p>
+          </div>
+          <div class="rounded-md bg-success/10 p-3">
+            <svg class="h-6 w-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- KYC Pending -->
+      <div class="card-stat" x-data="statCard({
+        label: 'KYC Pending',
+        endpoint: '/api/v1/customers/kyc/pending',
+        icon: 'shield',
+        color: 'warning',
+        value: '234'
+      })">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="stat-label">KYC Pending</p>
+            <p class="stat-value" x-text="value"></p>
+            <p class="mt-1 text-xs text-gray-500">
+              perlu review
+            </p>
+          </div>
+          <div class="rounded-md bg-warning/10 p-3">
+            <svg class="h-6 w-6 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Duplicates Today -->
+      <div class="card-stat" x-data="statCard({
+        label: 'Duplikat Terdeteksi',
+        endpoint: '/api/v1/matching/duplicates/today',
+        icon: 'duplicate',
+        color: 'error',
+        value: '45'
+      })">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="stat-label">Duplikat Terdeteksi</p>
+            <p class="stat-value" x-text="value"></p>
+            <p class="mt-1 text-xs stat-trend-down">
+              ↓ 8% improvement
+            </p>
+          </div>
+          <div class="rounded-md bg-error/10 p-3">
+            <svg class="h-6 w-6 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <!-- Customer Growth Chart -->
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-base">Pertumbuhan CIF</h3>
+          <canvas id="customerGrowthChart" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Service Health -->
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-base">Service Health</h3>
+          <div class="space-y-2">
+            <template x-for="service in services" :key="service.name">
+              <div class="flex items-center justify-between rounded-md p-2 hover:bg-base-200">
+                <div class="flex items-center gap-3">
+                  <span :class="`status-dot status-${service.status === 'UP' ? 'up' : 'down'}`"></span>
+                  <span class="text-sm font-medium" x-text="service.name"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-gray-500" x-text="service.responseTime + 'ms'"></span>
+                  <span class="badge badge-sm" :class="service.status === 'UP' ? 'badge-success' : 'badge-error'" x-text="service.status"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <!-- Recent Customers -->
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <div class="flex items-center justify-between">
+            <h3 class="card-title text-base">CIF Terbaru</h3>
+            <a href="/pages/customer-list.html" class="link link-primary text-xs">Lihat semua →</a>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>CIF</th>
+                  <th>Nama</th>
+                  <th>Cabang</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="customer in recentCustomers" :key="customer.id">
+                  <tr>
+                    <td class="font-mono text-xs" x-text="customer.cifNumber"></td>
+                    <td x-text="customer.fullName"></td>
+                    <td class="text-xs" x-text="customer.branchId"></td>
+                    <td>
+                      <span class="badge badge-sm" :class="customer.status === 'ACTIVE' ? 'badge-success' : 'badge-gray'" x-text="customer.status"></span>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-base">Aktivitas Terkini</h3>
+          <div class="space-y-3">
+            <template x-for="activity in recentActivities" :key="activity.id">
+              <div class="flex gap-3">
+                <div class="avatar placeholder">
+                  <div class="w-8 rounded-full bg-primary/10 text-primary">
+                    <span class="text-xs" x-text="activity.user.initials"></span>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm">
+                    <span class="font-medium" x-text="activity.user.fullName"></span>
+                    <span class="text-gray-500" x-text="' ' + activity.action"></span>
+                  </p>
+                  <p class="text-xs text-gray-500" x-text="formatTime(activity.timestamp)"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { Chart } from 'chart.js/auto';
+      import { formatRelativeTime } from '../js/utils.js';
+
+      function dashboardPage() {
+        return {
+          loading: false,
+          lastUpdated: new Date().toLocaleTimeString('id-ID'),
+          services: [
+            { name: 'auth-service', status: 'UP', responseTime: 23 },
+            { name: 'customer-service', status: 'UP', responseTime: 45 },
+            { name: 'matching-service', status: 'UP', responseTime: 67 },
+            { name: 'audit-service', status: 'UP', responseTime: 12 },
+            { name: 'notification-service', status: 'UP', responseTime: 34 },
+            { name: 'workflow-service', status: 'UP', responseTime: 56 },
+            { name: 'product-service', status: 'UP', responseTime: 28 },
+            { name: 'ml-service', status: 'WARNING', responseTime: 234 },
+          ],
+          recentCustomers: [],
+          recentActivities: [],
+
+          async init() {
+            this.loadRecentData();
+            this.initChart();
+            // Auto refresh every 30s
+            setInterval(() => this.refresh(), 30000);
+          },
+
+          async refresh() {
+            this.loading = true;
+            await this.loadRecentData();
+            this.lastUpdated = new Date().toLocaleTimeString('id-ID');
+            this.loading = false;
+          },
+
+          async loadRecentData() {
+            // Mock data for now
+            this.recentCustomers = [
+              { id: 1, cifNumber: 'CIF-2026-00000123', fullName: 'Budi Setiawan', branchId: 'KCU-JKT-001', status: 'ACTIVE' },
+              { id: 2, cifNumber: 'CIF-2026-00000124', fullName: 'Siti Aminah', branchId: 'KCU-BDG-001', status: 'ACTIVE' },
+              { id: 3, cifNumber: 'CIF-2026-00000125', fullName: 'PT Maju Mundur', branchId: 'KCU-SBY-001', status: 'ACTIVE' },
+            ];
+            this.recentActivities = [
+              { id: 1, user: { fullName: 'Budi S.', initials: 'BS' }, action: 'memperbarui CIF-2026-00000120', timestamp: new Date(Date.now() - 300000) },
+              { id: 2, user: { fullName: 'Siti A.', initials: 'SA' }, action: 'menyetujui KYC untuk CIF-2026-00000119', timestamp: new Date(Date.now() - 600000) },
+              { id: 3, user: { fullName: 'Andi W.', initials: 'AW' }, action: 'login ke sistem', timestamp: new Date(Date.now() - 1800000) },
+            ];
+          },
+
+          initChart() {
+            const ctx = document.getElementById('customerGrowthChart');
+            if (!ctx) return;
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu'],
+                datasets: [{
+                  label: 'Total CIF',
+                  data: [10200000, 10500000, 10900000, 11200000, 11600000, 12000000, 12200000, 12345678],
+                  borderColor: '#1e40af',
+                  backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                  fill: true,
+                  tension: 0.4,
+                }],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: false } },
+              },
+            });
+          },
+
+          formatTime: formatRelativeTime,
+        };
+      }
+
+      window.dashboardPage = dashboardPage;
+    </script>
+  </body>
+</html>

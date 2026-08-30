@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="aurea">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AUREA Console - Admin Dashboard</title>
+    <meta name="description" content="AUREA - The Gold Standard of Data | Master Data Management Admin Dashboard" />
+    <meta name="theme-color" content="#0A1929" />
+
+    <!-- AUREA Favicon (multi-format) -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="128x128" href="/favicon-128x128.png" />
+
+    <!-- Fonts: Inter (UI) + Georgia (brand) + JetBrains Mono (code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Georgia&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body x-data="appData()" x-init="init()">
+    <!-- ==================== AUREA SPLASH SCREEN ==================== -->
+    <div
+      x-show="!initialized"
+      class="aurea-splash-wrapper"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-500"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+    >
+      <div class="aurea-splash-bg">
+        <div class="aurea-particle" style="left: 10%; --drift: 30px;"></div>
+        <div class="aurea-particle" style="left: 25%; --drift: -20px; animation-delay: 1s;"></div>
+        <div class="aurea-particle" style="left: 40%; --drift: 40px; animation-delay: 2s;"></div>
+        <div class="aurea-particle" style="left: 55%; --drift: -30px; animation-delay: 0.5s;"></div>
+        <div class="aurea-particle" style="left: 70%; --drift: 25px; animation-delay: 1.5s;"></div>
+        <div class="aurea-particle" style="left: 85%; --drift: -40px; animation-delay: 2.5s;"></div>
+      </div>
+      <div class="aurea-splash-content">
+        <div class="aurea-splash-mark">
+          <div class="aurea-splash-circle"></div>
+          <div class="aurea-splash-a">A</div>
+          <div class="aurea-splash-dots">
+            <div class="aurea-splash-dot"></div>
+            <div class="aurea-splash-dot"></div>
+            <div class="aurea-splash-dot"></div>
+          </div>
+        </div>
+        <h1 class="aurea-splash-text">AUREA</h1>
+        <div class="aurea-splash-divider"></div>
+        <p class="aurea-splash-tagline">THE GOLD STANDARD OF DATA</p>
+        <div class="aurea-splash-loader"></div>
+        <p class="aurea-splash-version">AUREA Console v1.0.0</p>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div x-show="initialized && !authenticated" x-cloak>
+      <!-- Loaded dynamically from pages/login.html -->
+    </div>
+
+    <!-- Main App -->
+    <div
+      x-show="initialized && authenticated"
+      x-cloak
+      class="flex h-screen bg-base-200"
+    >
+      <!-- Sidebar -->
+      <aside
+        class="flex w-64 flex-col bg-aurea-navy-600 shadow-md"
+        x-show="$store.app.sidebarOpen || $store.app.desktop"
+      >
+        <!-- AUREA Logo Header -->
+        <div class="flex h-16 items-center justify-start border-b border-aurea-navy-500 px-5">
+          <a href="/" class="flex items-center gap-3">
+            <img src="/logo-mark.svg" alt="AUREA" class="h-9 w-9" />
+            <div>
+              <h1 class="font-brand text-base font-bold tracking-wider text-aurea-gold-500">AUREA</h1>
+              <p class="text-[9px] uppercase tracking-widest text-aurea-gold-300/70">Console</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto p-4 scrollbar-thin">
+          <div class="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-aurea-gold-300/60">
+            Main
+          </div>
+          <div class="space-y-1">
+            <a href="/pages/dashboard.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Dashboard</span>
+            </a>
+
+            <a href="/pages/monitoring.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span>Monitoring</span>
+            </a>
+
+            <a href="/pages/insights.html" class="nav-link group">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span class="flex-1">Auto-Insights</span>
+              <span class="ml-auto rounded-full bg-aurea-gold-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-aurea-gold-300 group-hover:bg-aurea-gold-500/30">
+                AI
+              </span>
+            </a>
+
+            <a href="/pages/segmentation.html" class="nav-link group">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span class="flex-1">Segmentation</span>
+              <span class="ml-auto rounded-full bg-aurea-gold-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-aurea-gold-300 group-hover:bg-aurea-gold-500/30">
+                RFM
+              </span>
+            </a>
+
+            <a href="/pages/churn.html" class="nav-link group">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span class="flex-1">Churn Watch</span>
+              <span class="ml-auto flex items-center gap-1 rounded-full bg-red-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-300 group-hover:bg-red-500/30">
+                <span class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></span>
+                LIVE
+              </span>
+            </a>
+
+            <a href="/pages/fraud.html" class="nav-link group">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span class="flex-1">Fraud Detection</span>
+              <span class="ml-auto flex items-center gap-1 rounded-full bg-red-500/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-300 group-hover:bg-red-500/30">
+                <span class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></span>
+                LIVE
+              </span>
+            </a>
+          </div>
+
+          <div class="mb-2 mt-6 px-3 text-[10px] font-semibold uppercase tracking-widest text-aurea-gold-300/60">
+            Management
+          </div>
+          <div class="space-y-1">
+            <a href="/pages/config.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Configuration</span>
+            </a>
+
+            <a href="/pages/reports.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>Reports & Analytics</span>
+            </a>
+          </div>
+
+          <div class="mb-2 mt-6 px-3 text-[10px] font-semibold uppercase tracking-widest text-aurea-gold-300/60">
+            Operations
+          </div>
+          <div class="space-y-1">
+            <a href="/pages/health.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span>System Health</span>
+            </a>
+
+            <a href="/pages/dr-failover.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>DR Failover</span>
+            </a>
+
+            <a href="/pages/finops.html" class="nav-link">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>FinOps</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- User menu -->
+        <div class="border-t border-aurea-navy-500 p-4">
+          <div class="dropdown dropdown-top dropdown-end w-full">
+            <label tabindex="0" class="flex cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-aurea-navy-500">
+              <div class="avatar placeholder">
+                <div class="w-9 rounded-full bg-aurea-gradient text-aurea-navy-600">
+                  <span x-text="user.initials" class="font-semibold"></span>
+                </div>
+              </div>
+              <div class="flex-1 overflow-hidden">
+                <p class="truncate text-sm font-medium text-white" x-text="user.fullName"></p>
+                <p class="truncate text-xs text-aurea-gold-300/70" x-text="user.email"></p>
+              </div>
+              <svg class="h-4 w-4 text-aurea-gold-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+              </svg>
+            </label>
+            <ul tabindex="0" class="menu dropdown-content z-10 mt-2 w-52 rounded-md bg-aurea-navy-600 p-2 shadow-lg">
+              <li><a class="text-white hover:bg-aurea-navy-500">Profile</a></li>
+              <li><a class="text-white hover:bg-aurea-navy-500">Settings</a></li>
+              <li><a @click.prevent="logout()" class="text-aurea-gold-300 hover:bg-aurea-navy-500">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="flex-1 overflow-y-auto">
+        <!-- Top bar -->
+        <header
+          class="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-base-200 bg-base-100 px-6"
+        >
+          <div class="flex items-center gap-4">
+            <button @click="$store.app.toggleSidebar()" class="btn btn-ghost btn-sm lg:hidden">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-lg font-semibold" x-text="$store.app.pageTitle"></h2>
+                <span class="rounded-full bg-aurea-gold-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-aurea-gold-700">
+                  AUREA
+                </span>
+              </div>
+              <p class="text-xs text-gray-500" x-text="$store.app.breadcrumb"></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- Real-time connection status -->
+            <div class="flex items-center gap-2 text-xs">
+              <span
+                :class="ws.connected ? 'status-dot status-up' : 'status-dot status-down'"
+              ></span>
+              <span x-text="ws.connected ? 'Real-time' : 'Offline'"></span>
+            </div>
+            <!-- Notifications -->
+            <button class="btn btn-ghost btn-sm">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Page content (loaded dynamically) -->
+        <div class="p-6" id="page-content">
+          <div class="text-center">
+            <img src="/logo-stacked.svg" alt="AUREA" class="mx-auto mb-6 h-32" />
+            <p class="font-brand text-2xl text-aurea-gold-700">Welcome to AUREA Console</p>
+            <p class="mt-2 text-sm text-gray-500">The Gold Standard of Data — Select a menu from the sidebar to get started</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Toast notifications -->
+    <div class="toast-container" x-data>
+      <template x-for="toast in $store.toast.items" :key="toast.id">
+        <div
+          :class="`toast toast-${toast.type}`"
+          x-text="toast.message"
+          x-transition
+        ></div>
+      </template>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

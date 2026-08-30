@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - MDM Bank XYZ</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body class="bg-gradient-to-br from-primary/10 to-secondary/10">
+    <div
+      class="flex min-h-screen items-center justify-center p-4"
+      x-data="loginForm()"
+    >
+      <div class="card w-full max-w-md bg-base-100 shadow-2xl">
+        <div class="card-body">
+          <!-- Logo & Title -->
+          <div class="mb-6 text-center">
+            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-white">
+              <svg class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 3h18v2H3V3zm2 4h14v2H5V7zm2 4h10v2H7v-2zm0 4h10v2H7v-2zm-2 4h14v2H5v-2z" />
+              </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-primary">MDM Bank XYZ</h1>
+            <p class="text-sm text-gray-500">Admin Dashboard</p>
+          </div>
+
+          <!-- Error alert -->
+          <div
+            x-show="error"
+            x-cloak
+            class="alert alert-error mb-4"
+            x-transition
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span x-text="error"></span>
+          </div>
+
+          <!-- Login Form -->
+          <form @submit.prevent="submit()">
+            <!-- Username -->
+            <div class="form-control mb-4">
+              <label class="form-label" for="username">Username atau Email</label>
+              <input
+                type="text"
+                id="username"
+                x-model="username"
+                class="form-input"
+                placeholder="admin@bankxyz.co.id"
+                required
+                :disabled="loading"
+              />
+            </div>
+
+            <!-- Password -->
+            <div class="form-control mb-4" x-show="!mfaRequired">
+              <label class="form-label" for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                x-model="password"
+                class="form-input"
+                placeholder="••••••••"
+                required
+                :disabled="loading"
+              />
+            </div>
+
+            <!-- MFA Code -->
+            <div class="form-control mb-4" x-show="mfaRequired" x-cloak>
+              <label class="form-label" for="mfaCode">
+                Kode MFA
+                <span class="ml-2 text-xs text-gray-500" x-text="`(${mfaMethod})`"></span>
+              </label>
+              <input
+                type="text"
+                id="mfaCode"
+                x-model="mfaCode"
+                class="form-input"
+                placeholder="123456"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                required
+                :disabled="loading"
+              />
+              <p class="mt-1 text-xs text-gray-500">
+                Buka aplikasi authenticator Anda dan masukkan 6 digit kode
+              </p>
+            </div>
+
+            <!-- Remember me -->
+            <div class="form-control mb-6" x-show="!mfaRequired">
+              <label class="flex cursor-pointer items-center">
+                <input type="checkbox" class="checkbox checkbox-primary checkbox-sm" />
+                <span class="ml-2 text-sm">Ingat saya</span>
+              </label>
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              class="btn btn-primary w-full"
+              :disabled="loading"
+            >
+              <span x-show="!loading">
+                <span x-show="!mfaRequired">Login</span>
+                <span x-show="mfaRequired" x-cloak>Verifikasi MFA</span>
+              </span>
+              <span x-show="loading" x-cloak class="loading loading-spinner loading-sm"></span>
+            </button>
+          </form>
+
+          <!-- Help text -->
+          <div class="mt-6 text-center text-xs text-gray-500">
+            <p>Default login (dev): admin / Admin@123</p>
+            <p class="mt-1">© 2026 Bank XYZ. Confidential.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,379 @@
+# Docker Compose for MDM Local Development
+# Usage: docker-compose -f docker-compose.dev.yaml up
+
+version: "3.9"
+
+x-common-env: &common-env
+  SPRING_PROFILES_ACTIVE: dev
+  KEYCLOAK_ISSUER_URI: http://keycloak:8180/realms/mdm-dev
+  REDIS_HOST: valkey
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
+  EUREKA_URI: http://eureka:8761/eureka
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  # ============================================================
+  # INFRASTRUCTURE
+  # ============================================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mdm-postgres
+    environment:
+      POSTGRES_USER: mdm_admin
+      POSTGRES_PASSWORD: mdm_dev_password
+      POSTGRES_MULTIPLE_DATABASES: "mdm_auth,mdm_customer,mdm_matching,mdm_audit,mdm_notification,mdm_workflow,mdm_product,mdm_branch,mdm_report,mdm_ml,mdm_integration,mdm_document,mdm_admin"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/scripts/init-databases.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mdm_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    <<: *restart
+
+  valkey:
+    image: valkey/valkey:7.2-alpine
+    container_name: mdm-valkey
+    ports:
+      - "6379:6379"
+    command: valkey-server --maxmemory 1gb --maxmemory-policy allkeys-lru --appendonly yes
+    volumes:
+      - valkey_data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    <<: *restart
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: mdm-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 6
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    <<: *restart
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: mdm-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    <<: *restart
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24-alpine
+    container_name: mdm-clickhouse
+    environment:
+      CLICKHOUSE_DB: mdm_analytics
+      CLICKHOUSE_USER: mdm_user
+      CLICKHOUSE_PASSWORD: mdm_dev_password
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    <<: *restart
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    container_name: mdm-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    <<: *restart
+
+  neo4j:
+    image: neo4j:5.18-community
+    container_name: mdm-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/mdm_dev_password
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    <<: *restart
+
+  minio:
+    image: minio/minio:latest
+    container_name: mdm-minio
+    environment:
+      MINIO_ROOT_USER: mdm_admin
+      MINIO_ROOT_PASSWORD: mdm_dev_password
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    <<: *restart
+
+  # ============================================================
+  # SERVICE DISCOVERY
+  # ============================================================
+
+  eureka:
+    image: steeltoeoss/eureka-server:3.0.0
+    container_name: mdm-eureka
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8761
+    ports:
+      - "8761:8761"
+    <<: *restart
+
+  # ============================================================
+  # SECURITY
+  # ============================================================
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: mdm-keycloak
+    command: ["start-dev", "--http-port=8180", "--http-relative-path=/auth"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8180"
+    volumes:
+      - ./keycloak/realm-config-dev.json:/opt/keycloak/data/import/realm.json
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    <<: *restart
+
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: mdm-vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    volumes:
+      - vault_data:/vault/file
+    <<: *restart
+
+  # ============================================================
+  # OBSERVABILITY
+  # ============================================================
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: mdm-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./infrastructure/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    <<: *restart
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: mdm-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/observability/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    <<: *restart
+
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: mdm-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    <<: *restart
+
+  tempo:
+    image: grafana/tempo:2.4.0
+    container_name: mdm-tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./infrastructure/observability/tempo.yaml:/etc/tempo.yaml
+      - tempo_data:/var/tempo
+    ports:
+      - "4318:4318"   # OTLP HTTP
+      - "4317:4317"   # OTLP gRPC
+    <<: *restart
+
+  # ============================================================
+  # BACKEND SERVICES
+  # ============================================================
+
+  api-gateway:
+    build:
+      context: ./backend/api-gateway
+      dockerfile: Dockerfile
+    image: bankxyz/mdm-api-gateway:dev
+    container_name: mdm-api-gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      eureka:
+        condition: service_started
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    <<: *restart
+
+  auth-service:
+    build:
+      context: ./backend/auth-service
+      dockerfile: Dockerfile
+    image: bankxyz/mdm-auth-service:dev
+    container_name: mdm-auth-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://postgres:5432/mdm_auth
+      DB_USERNAME: mdm_admin
+      DB_PASSWORD: mdm_dev_password
+    ports:
+      - "8081:8081"
+    <<: *restart
+
+  customer-service:
+    build:
+      context: ./backend/customer-service
+      dockerfile: Dockerfile
+    image: bankxyz/mdm-customer-service:dev
+    container_name: mdm-customer-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      <<: *common-env
+      SERVER_PORT: 8082
+      DB_URL: jdbc:postgresql://postgres:5432/mdm_customer
+      DB_USERNAME: mdm_admin
+      DB_PASSWORD: mdm_dev_password
+    ports:
+      - "8082:8082"
+    <<: *restart
+
+  # ============================================================
+  # FRONTEND
+  # ============================================================
+
+  admin-dashboard:
+    build:
+      context: ./frontend/admin-dashboard
+      dockerfile: Dockerfile
+    image: bankxyz/mdm-admin-dashboard:dev
+    container_name: mdm-admin-dashboard
+    depends_on:
+      - api-gateway
+    ports:
+      - "3000:3000"
+    <<: *restart
+
+volumes:
+  postgres_data:
+  valkey_data:
+  kafka_data:
+  zookeeper_data:
+  clickhouse_data:
+  es_data:
+  neo4j_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  tempo_data:
+  vault_data:
+
+networks:
+  default:
+    name: mdm-network

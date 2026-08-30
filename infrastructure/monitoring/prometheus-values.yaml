@@ -1,0 +1,130 @@
+# Prometheus & Grafana monitoring stack for MDM production
+# Deploy with: helm install prometheus prometheus-community/kube-prometheus-stack -f values.yaml
+
+prometheus:
+  prometheusSpec:
+    retention: 30d
+    retentionSize: 50GB
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 200Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector: {}
+    additionalScrapeConfigs:
+      - job_name: 'mdm-services'
+        kubernetes_sd_configs:
+          - role: service
+            namespaces:
+              names: [mdm-prod]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: kubernetes_name
+
+    alerting:
+      alertmanagers:
+        - staticConfigs:
+            - targets: ['alertmanager-operated:9093']
+          namespaceSelector:
+            matchNames: [monitoring]
+
+grafana:
+  enabled: true
+  adminPassword: REPLACE_ME
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    size: 50Gi
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'mdm'
+          orgId: 1
+          folder: 'MDM'
+          type: file
+          disableDeletion: true
+          updateIntervalSeconds: 60
+          options:
+            path: /var/lib/grafana/dashboards
+  dashboardsConfigMaps:
+    mdm-overview: '{"apiVersion": v1, "kind": ConfigMap, "metadata": {"name": mdm-dashboards}}'
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+kubeStateMetrics:
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+nodeExporter:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

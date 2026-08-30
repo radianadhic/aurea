@@ -1,0 +1,100 @@
+# Istio VirtualService for traffic routing (canary, blue-green)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: customer-service
+  namespace: mdm
+spec:
+  hosts:
+    - customer-service
+  http:
+    # 90% traffic to stable, 10% to canary
+    - match:
+        - headers:
+            x-canary:
+              exact: "true"
+      route:
+        - destination:
+            host: customer-service
+            subset: canary
+          weight: 100
+    - route:
+        - destination:
+            host: customer-service
+            subset: stable
+          weight: 90
+        - destination:
+            host: customer-service
+            subset: canary
+          weight: 10
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: 5xx,reset,connect-failure
+---
+# DestinationRule for subsets
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: customer-service
+  namespace: mdm
+spec:
+  host: customer-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        h2UpgradePolicy: UPGRADE
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+  subsets:
+    - name: stable
+      labels:
+        version: 1.0.0
+    - name: canary
+      labels:
+        version: 1.1.0
+---
+# PeerAuthentication - strict mTLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mdm-strict
+  namespace: mdm
+spec:
+  mtls:
+    mode: STRICT
+---
+# Authorization policy - default deny
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: mdm
+spec:
+  {}  # Default deny all
+---
+# Authorization policy - allow API gateway
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway
+  namespace: mdm
+spec:
+  selector:
+    matchLabels:
+      tier: backend
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/mdm/sa/api-gateway"
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+            paths: ["/api/*"]

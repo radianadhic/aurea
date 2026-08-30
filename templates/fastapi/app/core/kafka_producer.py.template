@@ -1,0 +1,64 @@
+"""Async Kafka producer for event publishing."""
+import json
+from typing import Any, Optional
+from aiokafka import AIOKafkaProducer
+import structlog
+
+from app.core.config import settings
+
+logger = structlog.get_logger(__name__)
+
+# Global Kafka producer
+_producer: Optional[AIOKafkaProducer] = None
+
+
+async def init_kafka() -> None:
+    """Initialize Kafka producer."""
+    global _producer
+    logger.info("kafka_initializing", servers=settings.kafka_bootstrap_servers)
+    _producer = AIOKafkaProducer(
+        bootstrap_servers=settings.kafka_bootstrap_servers,
+        value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
+        key_serializer=lambda k: k.encode("utf-8") if k else None,
+        acks="all",
+        enable_idempotence=True,
+        compression_type="snappy",
+        max_in_flight_requests_per_connection=5,
+        request_timeout_ms=30000,
+    )
+    await _producer.start()
+    logger.info("kafka_initialized")
+
+
+async def close_kafka() -> None:
+    """Close Kafka producer."""
+    global _producer
+    if _producer:
+        await _producer.stop()
+        _producer = None
+        logger.info("kafka_closed")
+
+
+async def check_kafka_health() -> bool:
+    """Check if Kafka is reachable."""
+    try:
+        if _producer:
+            # Check producer is still running
+            return not _producer._closed
+        return False
+    except Exception as e:
+        logger.error("kafka_health_check_failed", error=str(e))
+        return False
+
+
+async def publish_event(topic: str, key: str, value: dict[str, Any]) -> None:
+    """Publish event to Kafka topic."""
+    if not _producer:
+        raise RuntimeError("Kafka producer not initialized")
+
+    try:
+        await _producer.send_and_wait(topic, value=value, key=key)
+        logger.debug("event_published", topic=topic, key=key, event_type=value.get("eventType"))
+    except Exception as e:
+        logger.error("event_publish_failed", topic=topic, key=key, error=str(e))
+        raise

@@ -1,0 +1,171 @@
+"""
+{{SERVICE_TITLE}} - {{SERVICE_DESCRIPTION}}
+
+Main FastAPI application module.
+"""
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import ORJSONResponse
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from prometheus_client import make_asgi_app
+import structlog
+import time
+import uuid
+
+from app.core.config import settings
+from app.core.logging import configure_logging
+from app.core.exceptions import register_exception_handlers
+from app.middleware.correlation import CorrelationIdMiddleware
+from app.api.v1 import api_router
+
+# Configure structured logging
+configure_logging(settings.log_level)
+logger = structlog.get_logger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan - startup and shutdown."""
+    # Startup
+    logger.info(
+        "service_starting",
+        service=settings.service_name,
+        version=settings.service_version,
+        environment=settings.environment,
+    )
+
+    # Initialize resources
+    from app.core.database import init_db
+    from app.core.kafka_producer import init_kafka
+    from app.core.redis_client import init_redis
+
+    await init_db()
+    await init_kafka()
+    await init_redis()
+
+    logger.info("service_started", service=settings.service_name)
+
+    yield
+
+    # Shutdown
+    logger.info("service_stopping", service=settings.service_name)
+
+    from app.core.kafka_producer import close_kafka
+    from app.core.redis_client import close_redis
+
+    await close_kafka()
+    await close_redis()
+
+    logger.info("service_stopped", service=settings.service_name)
+
+
+# Create FastAPI app
+app = FastAPI(
+    title=settings.service_title,
+    description=settings.service_description,
+    version=settings.service_version,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    default_response_class=ORJSONResponse,
+    lifespan=lifespan,
+)
+
+# ============================================================
+# MIDDLEWARE
+# ============================================================
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["X-Correlation-Id", "X-Request-Id"],
+    max_age=3600,
+)
+
+# Correlation ID
+app.add_middleware(CorrelationIdMiddleware)
+
+# Prometheus metrics endpoint
+metrics_app = make_asgi_app()
+app.mount("/metrics", metrics_app)
+
+# OpenTelemetry instrumentation
+FastAPIInstrumentor.instrument_app(app)
+
+# ============================================================
+# EXCEPTION HANDLERS
+# ============================================================
+register_exception_handlers(app)
+
+# ============================================================
+# ROUTES
+# ============================================================
+app.include_router(api_router, prefix="/api/v1")
+
+# Health & Info
+@app.get("/health", tags=["health"])
+async def health():
+    """Liveness probe - service is running."""
+    return {"status": "UP", "service": settings.service_name, "version": settings.service_version}
+
+@app.get("/health/ready", tags=["health"])
+async def readiness(request: Request):
+    """Readiness probe - all dependencies are reachable."""
+    checks = {}
+    overall_status = "UP"
+
+    # Check database
+    try:
+        from app.core.database import check_db_health
+        db_ok = await check_db_health()
+        checks["database"] = "UP" if db_ok else "DOWN"
+        if not db_ok:
+            overall_status = "DOWN"
+    except Exception as e:
+        checks["database"] = f"DOWN: {str(e)}"
+        overall_status = "DOWN"
+
+    # Check Redis
+    try:
+        from app.core.redis_client import check_redis_health
+        redis_ok = await check_redis_health()
+        checks["redis"] = "UP" if redis_ok else "DOWN"
+        if not redis_ok:
+            overall_status = "DOWN"
+    except Exception as e:
+        checks["redis"] = f"DOWN: {str(e)}"
+        overall_status = "DOWN"
+
+    # Check Kafka
+    try:
+        from app.core.kafka_producer import check_kafka_health
+        kafka_ok = await check_kafka_health()
+        checks["kafka"] = "UP" if kafka_ok else "DOWN"
+        if not kafka_ok:
+            overall_status = "DOWN"
+    except Exception as e:
+        checks["kafka"] = f"DOWN: {str(e)}"
+        overall_status = "DOWN"
+
+    status_code = 200 if overall_status == "UP" else 503
+    return ORJSONResponse(
+        status_code=status_code,
+        content={"status": overall_status, "service": settings.service_name, "checks": checks}
+    )
+
+@app.get("/", tags=["info"])
+async def root():
+    """Service info."""
+    return {
+        "service": settings.service_name,
+        "title": settings.service_title,
+        "version": settings.service_version,
+        "environment": settings.environment,
+        "docs": "/docs",
+        "openapi": "/openapi.json",
+    }

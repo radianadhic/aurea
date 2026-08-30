@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinOps - MDM Admin</title>
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="finopsPage()">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold">FinOps Dashboard</h1>
+      <p class="text-sm text-gray-500">Cost monitoring and optimization across all MDM services</p>
+    </div>
+
+    <!-- Total Cost -->
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div class="card-stat">
+        <p class="stat-label">MTD Cost</p>
+        <p class="stat-value">$87,234</p>
+        <p class="text-xs stat-trend-up">↑ 5% vs last month</p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Forecast (Month End)</p>
+        <p class="stat-value">$105,432</p>
+        <p class="text-xs text-gray-500">based on current usage</p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Budget</p>
+        <p class="stat-value text-secondary">$120,000</p>
+        <p class="text-xs text-success">12% remaining</p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Potential Savings</p>
+        <p class="stat-value text-success">$12,500</p>
+        <p class="text-xs text-gray-500">from right-sizing</p>
+      </div>
+    </div>
+
+    <!-- Cost by Service -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Cost by Service (MTD)</h3>
+        <div class="space-y-3">
+          <template x-for="svc in serviceCosts" :key="svc.name">
+            <div>
+              <div class="flex justify-between text-sm">
+                <span class="font-mono" x-text="svc.name"></span>
+                <span class="font-mono" x-text="'$' + svc.cost.toLocaleString()"></span>
+              </div>
+              <progress class="progress progress-primary" :value="svc.percentage" max="100"></progress>
+              <p class="text-xs text-gray-500 mt-1">
+                <span x-text="svc.percentage + '% of total'"></span>
+                · <span x-text="svc.resources"></span>
+              </p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optimization Recommendations -->
+    <div class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">💡 Optimization Recommendations</h3>
+        <div class="space-y-2">
+          <div class="alert alert-success">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4 class="font-semibold">Right-size audit-service</h4>
+              <p class="text-sm">Currently 2GB RAM, avg usage 380MB. Reduce to 1GB → save $120/month</p>
+            </div>
+          </div>
+          <div class="alert alert-warning">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+              <h4 class="font-semibold">Use Reserved Instances for ml-service</h4>
+              <p class="text-sm">On-demand $2,100/mo. 1-year reserved: $1,200/mo → save $900/month</p>
+            </div>
+          </div>
+          <div class="alert alert-info">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h4 class="font-semibold">Reduce ClickHouse replicas during off-hours</h4>
+              <p class="text-sm">3 replicas at night vs 3 during day. Save $400/month with 1 replica 22:00-06:00</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function finopsPage() {
+        return {
+          serviceCosts: [
+            { name: 'matching-service', cost: 18420, percentage: 21, resources: '8 vCPU, 16GB RAM, 500GB SSD' },
+            { name: 'ml-service', cost: 15230, percentage: 17, resources: '16 vCPU, 64GB RAM, GPU' },
+            { name: 'customer-service', cost: 12450, percentage: 14, resources: '6 vCPU, 12GB RAM' },
+            { name: 'postgres-primary', cost: 11800, percentage: 13, resources: 'RDS db.r6g.2xlarge' },
+            { name: 'clickhouse', cost: 10200, percentage: 12, resources: '3 nodes, 8 vCPU, 32GB each' },
+            { name: 'audit-service', cost: 8200, percentage: 9, resources: '4 vCPU, 8GB RAM' },
+            { name: 'kafka', cost: 7100, percentage: 8, resources: '3 brokers, m5.large' },
+            { name: 'neo4j', cost: 4834, percentage: 6, resources: '1 primary, 2 replicas' },
+          ],
+        };
+      }
+
+      window.finopsPage = finopsPage;
+    </script>
+  </body>
+</html>

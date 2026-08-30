@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUREA — Auto-Insights Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Georgia&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0A1929;
+      --navy-light: #1A2F47;
+      --navy-dark: #050F19;
+      --gold: #D4AF37;
+      --gold-light: #FFD764;
+      --gold-dark: #B8860B;
+      --white: #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-500: #6B7280;
+      --gray-700: #374151;
+      --success: #16A34A;
+      --info: #0284C7;
+      --warning: #EA580C;
+      --error: #DC2626;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--gray-50);
+      color: var(--navy);
+      margin: 0;
+    }
+    .font-georgia { font-family: 'Georgia', serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .gradient-gold {
+      background: linear-gradient(135deg, #D4AF37 0%, #FFD764 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .insight-card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      padding: 20px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .insight-card:hover {
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .severity-CRITICAL { background: #FEE2E2; color: var(--error); border: 1px solid #FECACA; }
+    .severity-WARNING { background: #FFEDD5; color: var(--warning); border: 1px solid #FED7AA; }
+    .severity-INFO { background: #DBEAFE; color: var(--info); border: 1px solid #BFDBFE; }
+    .severity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .severity-CRITICAL .severity-dot { background: var(--error); }
+    .severity-WARNING .severity-dot { background: var(--warning); }
+    .severity-INFO .severity-dot { background: var(--info); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .category-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      background: var(--navy);
+      color: var(--gold);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      background: var(--gold);
+      opacity: 0.1;
+      border-radius: 50%;
+      transform: translate(20px, -20px);
+    }
+    .metric-change-positive { color: var(--success); }
+    .metric-change-negative { color: var(--error); }
+    .loading-shimmer {
+      background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .refresh-btn {
+      background: var(--navy);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: var(--gold); color: var(--navy); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: white;
+      border: 1px solid var(--gray-300);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-chip:hover { border-color: var(--gold); }
+    .filter-chip.active {
+      background: var(--navy);
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 25, 41, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .chart-container {
+      position: relative;
+      height: 200px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="flex items-center gap-2 text-gray-500 hover:text-gray-700">
+          <span>←</span> <span>Back to Console</span>
+        </a>
+        <div class="h-6 w-px bg-gray-300"></div>
+        <h1 class="font-georgia text-2xl font-bold text-navy">
+          <span class="gradient-gold">Auto-Insights</span> Dashboard
+        </h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="lastUpdated" class="text-xs text-gray-500 font-mono"></span>
+        <button id="refreshBtn" class="refresh-btn flex items-center gap-2">
+          <span id="refreshIcon">↻</span>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Summary Stats -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="stat-card">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Total Insights</div>
+        <div class="text-4xl font-bold" id="statTotal">--</div>
+        <div class="text-sm text-gray-300 mt-1">auto-generated</div>
+      </div>
+      <div class="stat-card" style="border-color: #DC2626;">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Critical</div>
+        <div class="text-4xl font-bold text-red-300" id="statCritical">--</div>
+        <div class="text-sm text-gray-300 mt-1">requires attention</div>
+      </div>
+      <div class="stat-card" style="border-color: #EA580C;">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Warnings</div>
+        <div class="text-4xl font-bold text-orange-300" id="statWarning">--</div>
+        <div class="text-sm text-gray-300 mt-1">monitor closely</div>
+      </div>
+      <div class="stat-card" style="border-color: #16A34A;">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Healthy</div>
+        <div class="text-4xl font-bold text-green-300" id="statInfo">--</div>
+        <div class="text-sm text-gray-300 mt-1">all within range</div>
+      </div>
+    </section>
+
+    <!-- Category Breakdown -->
+    <section class="bg-white rounded-xl p-6 border border-gray-200 mb-8">
+      <h2 class="font-georgia text-xl font-bold mb-4 text-navy">Insights by Category</h2>
+      <div id="categoryBreakdown" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="flex flex-wrap items-center gap-2 mb-6">
+      <span class="text-sm font-semibold text-gray-700 mr-2">Filter:</span>
+      <button class="filter-chip active" data-filter="ALL">All</button>
+      <button class="filter-chip" data-filter="CRITICAL">🔴 Critical</button>
+      <button class="filter-chip" data-filter="WARNING">🟠 Warning</button>
+      <button class="filter-chip" data-filter="INFO">🔵 Info</button>
+      <span class="text-sm font-semibold text-gray-700 ml-4 mr-2">Category:</span>
+      <button class="filter-chip active" data-cat="ALL">All</button>
+      <button class="filter-chip" data-cat="Customer">Customer</button>
+      <button class="filter-chip" data-cat="Transaction">Transaction</button>
+      <button class="filter-chip" data-cat="System">System</button>
+      <button class="filter-chip" data-cat="KYC">KYC</button>
+      <button class="filter-chip" data-cat="Matching">Matching</button>
+    </section>
+
+    <!-- Top Critical Insights -->
+    <section id="topCriticalSection" class="mb-8 hidden">
+      <h2 class="font-georgia text-xl font-bold mb-4 text-red-600 flex items-center gap-2">
+        🚨 Top Critical Insights <span class="text-sm font-normal text-gray-500">(requires immediate action)</span>
+      </h2>
+      <div id="topCriticalList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Insights List -->
+    <section>
+      <h2 class="font-georgia text-xl font-bold mb-4 text-navy">
+        All Insights <span id="insightCount" class="text-sm font-normal text-gray-500"></span>
+      </h2>
+      <div id="insightsList" class="space-y-3">
+        <div class="loading-shimmer h-24 rounded-xl"></div>
+        <div class="loading-shimmer h-24 rounded-xl"></div>
+        <div class="loading-shimmer h-24 rounded-xl"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="p-6 border-b border-gray-200 flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span id="modalSeverity" class="severity-badge"></span>
+            <span id="modalCategory" class="category-pill"></span>
+          </div>
+          <h2 id="modalTitle" class="font-georgia text-2xl font-bold text-navy"></h2>
+        </div>
+        <button id="modalClose" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+      </div>
+      <div class="p-6 space-y-6">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Description</h3>
+          <p id="modalDescription" class="text-gray-700 leading-relaxed"></p>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-xs text-gray-500 uppercase">Current Value</div>
+            <div id="modalCurrent" class="text-2xl font-bold text-navy mt-1"></div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-xs text-gray-500 uppercase">Expected Value</div>
+            <div id="modalExpected" class="text-2xl font-bold text-gray-700 mt-1"></div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <div class="text-xs text-gray-500 uppercase">Deviation</div>
+            <div id="modalDeviation" class="text-2xl font-bold mt-1"></div>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">30-Day Trend</h3>
+          <div class="chart-container">
+            <canvas id="modalChart"></canvas>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Recommended Actions</h3>
+          <ul id="modalRecommendations" class="space-y-2"></ul>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2">Related Entities</h3>
+          <div id="modalEntities" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { insightsAPI } from '/js/insights/api.js';
+
+    // State
+    let allInsights = [];
+    let currentSeverityFilter = 'ALL';
+    let currentCategoryFilter = 'ALL';
+    let chartInstance = null;
+
+    // ==================================================
+    // INITIALIZATION
+    // ==================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadInsights();
+      setupListeners();
+      // Auto-refresh every 60 seconds
+      setInterval(loadInsights, 60000);
+    });
+
+    function setupListeners() {
+      document.getElementById('refreshBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('refreshBtn');
+        const icon = document.getElementById('refreshIcon');
+        btn.disabled = true;
+        icon.classList.add('animate-spin');
+        await loadInsights();
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      });
+
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('detailModal').addEventListener('click', (e) => {
+        if (e.target.id === 'detailModal') closeModal();
+      });
+
+      // Severity filters
+      document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentSeverityFilter = btn.dataset.filter;
+          renderInsights();
+        });
+      });
+
+      // Category filters
+      document.querySelectorAll('[data-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentCategoryFilter = btn.dataset.cat;
+          renderInsights();
+        });
+      });
+    }
+
+    // ==================================================
+    // DATA LOADING
+    // ==================================================
+    async function loadInsights() {
+      try {
+        const [summary, insights] = await Promise.all([
+          insightsAPI.getSummary(),
+          insightsAPI.getAll({ limit: 100 })
+        ]);
+        allInsights = insights;
+        renderSummary(summary);
+        renderCategoryBreakdown(summary);
+        renderTopCritical(summary);
+        renderInsights();
+        updateTimestamp();
+      } catch (err) {
+        console.error('Failed to load insights:', err);
+        document.getElementById('insightsList').innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <div class="text-4xl mb-2">⚠️</div>
+            <h3 class="font-semibold text-red-700 mb-1">Failed to load insights</h3>
+            <p class="text-sm text-red-600">${err.message}</p>
+            <p class="text-xs text-gray-500 mt-2">Make sure the ML service is running on port 8000</p>
+          </div>
+        `;
+      }
+    }
+
+    function updateTimestamp() {
+      const now = new Date();
+      document.getElementById('lastUpdated').textContent = `Last updated: ${now.toLocaleTimeString()}`;
+    }
+
+    // ==================================================
+    // RENDERING
+    // ==================================================
+    function renderSummary(summary) {
+      document.getElementById('statTotal').textContent = summary.total_insights || 0;
+      document.getElementById('statCritical').textContent = summary.by_severity?.CRITICAL || 0;
+      document.getElementById('statWarning').textContent = summary.by_severity?.WARNING || 0;
+      document.getElementById('statInfo').textContent = summary.by_severity?.INFO || 0;
+    }
+
+    function renderCategoryBreakdown(summary) {
+      const container = document.getElementById('categoryBreakdown');
+      const cats = summary.by_category || {};
+      const total = summary.total_insights || 1;
+
+      const icons = {
+        Customer: '👥', Transaction: '💳', System: '⚙️', KYC: '🔐', Matching: '🔗'
+      };
+
+      container.innerHTML = Object.entries(cats).map(([cat, count]) => {
+        const pct = Math.round((count / total) * 100);
+        return `
+          <div class="text-center p-3 rounded-lg bg-gray-50">
+            <div class="text-2xl mb-1">${icons[cat] || '📊'}</div>
+            <div class="text-xs text-gray-500 uppercase font-semibold">${cat}</div>
+            <div class="text-2xl font-bold text-navy">${count}</div>
+            <div class="text-xs text-gray-500">${pct}%</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTopCritical(summary) {
+      const section = document.getElementById('topCriticalSection');
+      const list = document.getElementById('topCriticalList');
+      const top = summary.top_critical || [];
+
+      if (top.length === 0) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      list.innerHTML = top.map(c => `
+        <div class="insight-card border-red-300 bg-red-50" data-insight-id="${c.id}">
+          <div class="flex items-start justify-between mb-2">
+            <span class="severity-badge severity-CRITICAL">
+              <span class="severity-dot"></span> CRITICAL
+            </span>
+            <span class="text-xs text-gray-500 font-mono">${c.metric}</span>
+          </div>
+          <h3 class="font-semibold text-red-700 mb-1">${c.title}</h3>
+          <p class="text-sm text-gray-700 mb-2">${c.description}</p>
+          <div class="text-xs text-red-600 font-mono">
+            Deviation: <span class="font-bold">${c.deviation_pct > 0 ? '+' : ''}${c.deviation_pct.toFixed(1)}%</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Click handlers
+      list.querySelectorAll('.insight-card').forEach(card => {
+        card.addEventListener('click', () => openModal(card.dataset.insightId));
+      });
+    }
+
+    function renderInsights() {
+      const filtered = allInsights.filter(i => {
+        const sevMatch = currentSeverityFilter === 'ALL' || i.severity === currentSeverityFilter;
+        const catMatch = currentCategoryFilter === 'ALL' || i.category === currentCategoryFilter;
+        return sevMatch && catMatch;
+      });
+
+      document.getElementById('insightCount').textContent = `(${filtered.length} of ${allInsights.length})`;
+      const list = document.getElementById('insightsList');
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
+            <div class="text-4xl mb-2">✨</div>
+            <h3 class="font-semibold text-navy mb-1">No insights match your filters</h3>
+            <p class="text-sm text-gray-500">Try adjusting the filters above.</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = filtered.map(insight => `
+        <div class="insight-card" data-insight-id="${insight.id}">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="severity-badge severity-${insight.severity}">
+                <span class="severity-dot"></span> ${insight.severity}
+              </span>
+              <span class="category-pill">${insight.category}</span>
+              <span class="text-xs text-gray-500 font-mono">${insight.metric}</span>
+            </div>
+            <span class="text-xs text-gray-400">${formatTime(insight.detected_at)}</span>
+          </div>
+          <h3 class="font-semibold text-navy mb-2">${insight.title}</h3>
+          <p class="text-sm text-gray-600 mb-3">${insight.description}</p>
+          <div class="flex items-center gap-4 text-xs">
+            <span class="text-gray-500">
+              Current: <span class="font-mono font-semibold text-navy">${formatNumber(insight.current_value)}</span>
+            </span>
+            <span class="text-gray-500">
+              Expected: <span class="font-mono text-gray-600">${formatNumber(insight.expected_value)}</span>
+            </span>
+            <span class="${insight.deviation_pct > 0 ? 'metric-change-positive' : 'metric-change-negative'} font-mono font-semibold">
+              ${insight.deviation_pct > 0 ? '↑' : '↓'} ${Math.abs(insight.deviation_pct).toFixed(1)}%
+            </span>
+            <span class="text-gray-500 ml-auto">
+              Confidence: <span class="font-mono">${(insight.confidence * 100).toFixed(0)}%</span>
+            </span>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.insight-card').forEach(card => {
+        card.addEventListener('click', () => openModal(card.dataset.insightId));
+      });
+    }
+
+    // ==================================================
+    // MODAL
+    // ==================================================
+    function openModal(insightId) {
+      const insight = allInsights.find(i => i.id === insightId);
+      if (!insight) return;
+
+      document.getElementById('modalSeverity').className = `severity-badge severity-${insight.severity}`;
+      document.getElementById('modalSeverity').innerHTML = `<span class="severity-dot"></span> ${insight.severity}`;
+      document.getElementById('modalCategory').textContent = insight.category;
+      document.getElementById('modalTitle').textContent = insight.title;
+      document.getElementById('modalDescription').textContent = insight.description;
+
+      document.getElementById('modalCurrent').textContent = formatNumber(insight.current_value);
+      document.getElementById('modalExpected').textContent = formatNumber(insight.expected_value);
+
+      const devEl = document.getElementById('modalDeviation');
+      const devSign = insight.deviation_pct > 0 ? '+' : '';
+      devEl.textContent = `${devSign}${insight.deviation_pct.toFixed(1)}%`;
+      devEl.className = insight.deviation_pct > 0
+        ? 'text-2xl font-bold mt-1 metric-change-positive'
+        : 'text-2xl font-bold mt-1 metric-change-negative';
+
+      // Recommendations
+      const recList = document.getElementById('modalRecommendations');
+      recList.innerHTML = (insight.recommendations || []).map(r => `
+        <li class="flex items-start gap-2 text-sm text-gray-700">
+          <span class="text-gold mt-0.5">▸</span>
+          <span>${r}</span>
+        </li>
+      `).join('');
+
+      // Entities
+      const entities = document.getElementById('modalEntities');
+      entities.innerHTML = (insight.related_entities || []).map(e => `
+        <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
+          <strong>${e.type}:</strong> ${e.name || e.id}
+        </span>
+      `).join('') || '<span class="text-xs text-gray-500">No related entities</span>';
+
+      // Chart
+      if (insight.chart_data) {
+        renderChart(insight.chart_data);
+      }
+
+      document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').classList.remove('open');
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+    }
+
+    function renderChart(chartData) {
+      const ctx = document.getElementById('modalChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      const labels = chartData.labels || [];
+      const values = chartData.values || [];
+      const expected = chartData.expected || [];
+      const anomalyIdx = new Set(chartData.anomaly_indices || []);
+
+      const colors = values.map((_, i) => anomalyIdx.has(i) ? '#DC2626' : '#D4AF37');
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Actual',
+              data: values,
+              borderColor: '#D4AF37',
+              backgroundColor: 'rgba(212, 175, 55, 0.1)',
+              borderWidth: 2,
+              pointBackgroundColor: colors,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              tension: 0.3,
+              fill: true,
+            },
+            {
+              label: 'Expected (mean)',
+              data: expected,
+              borderColor: '#0A1929',
+              borderDash: [5, 5],
+              borderWidth: 1.5,
+              pointRadius: 0,
+              fill: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 12 } } },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: { grid: { color: '#F3F4F6' }, ticks: { font: { family: 'Inter' } } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 } } }
+          }
+        }
+      });
+    }
+
+    // ==================================================
+    // UTILITIES
+    // ==================================================
+    function formatNumber(n) {
+      if (n === null || n === undefined) return '--';
+      if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+      if (Math.abs(n) >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+      if (Math.abs(n) < 1) return n.toFixed(3);
+      return n.toLocaleString('id-ID', { maximumFractionDigits: 0 });
+    }
+
+    function formatTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const now = new Date();
+      const diff = (now - d) / 1000;
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return d.toLocaleDateString();
+    }
+  </script>
+</body>
+</html>

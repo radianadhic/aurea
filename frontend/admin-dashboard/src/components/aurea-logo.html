@@ -1,0 +1,44 @@
+<!--
+  AUREA Logo Component
+  Usage: <div x-data="aureaLogo()" x-html="render('mark')"></div>
+         <div x-data="aureaLogo()" x-html="render('horizontal')"></div>
+         <div x-data="aureaLogo()" x-html="render('stacked')"></div>
+-->
+<div x-data="aureaLogoComponent()" class="aurea-logo-wrapper">
+  <!-- MARK ONLY (icon, 32-64px) -->
+  <template x-if="variant === 'mark'">
+    <img src="/logo-mark.svg" alt="AUREA" class="aurea-mark" :style="`height: ${size}px;`" />
+  </template>
+
+  <!-- HORIZONTAL (logo + text, 150-300px wide) -->
+  <template x-if="variant === 'horizontal'">
+    <img src="/logo-horizontal.svg" alt="AUREA - The Gold Standard of Data" class="aurea-horizontal" :style="`height: ${size}px;`" />
+  </template>
+
+  <!-- STACKED (logo + text, 200-400px wide) -->
+  <template x-if="variant === 'stacked'">
+    <img src="/logo-stacked.svg" alt="AUREA - The Gold Standard of Data" class="aurea-stacked" :style="`height: ${size}px;`" />
+  </template>
+</div>
+
+<script>
+function aureaLogoComponent() {
+  return {
+    variant: 'mark',  // 'mark' | 'horizontal' | 'stacked'
+    size: 32,
+
+    init() {
+      // Read variant from data attribute if present
+      const ds = this.$el.dataset;
+      if (ds.variant) this.variant = ds.variant;
+      if (ds.size) this.size = parseInt(ds.size);
+    }
+  };
+}
+</script>
+
+<style>
+.aurea-mark { display: inline-block; vertical-align: middle; }
+.aurea-horizontal { display: inline-block; vertical-align: middle; }
+.aurea-stacked { display: inline-block; vertical-align: middle; }
+</style>

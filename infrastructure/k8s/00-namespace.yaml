@@ -1,0 +1,47 @@
+# Namespace for MDM Bank XYZ
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mdm
+  labels:
+    name: mdm
+    environment: production
+    app.kubernetes.io/part-of: mdm-bank-xyz
+---
+# Resource quota for the namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: mdm-quota
+  namespace: mdm
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    limits.cpu: "200"
+    limits.memory: 400Gi
+    persistentvolumeclaims: "50"
+    services: "100"
+    secrets: "100"
+    configmaps: "100"
+---
+# Limit range for default resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mdm-limits
+  namespace: mdm
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 512Mi
+        ephemeral-storage: 1Gi
+      defaultRequest:
+        cpu: 100m
+        memory: 128Mi
+        ephemeral-storage: 100Mi
+      max:
+        cpu: "4"
+        memory: 8Gi

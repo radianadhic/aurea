@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "AUREA 360",
+    "tagline": "Standar Emas Data"
+  },
+  "nav": {
+    "dashboard": "Dasbor",
+    "customers": "Nasabah",
+    "analytics": "Analitik",
+    "insights": "Wawasan",
+    "settings": "Pengaturan"
+  },
+  "dashboard": {
+    "title": "Dasbor 360",
+    "welcome": "Selamat datang di AUREA 360"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "retry": "Coba lagi",
+    "save": "Simpan",
+    "cancel": "Batal"
+  }
+}

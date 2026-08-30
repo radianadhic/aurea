@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AUREA — The Gold Standard of Data | Product Showcase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Georgia&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --navy: #0A1929;
+  --navy-light: #1A2F47;
+  --navy-dark: #050F19;
+  --gold: #D4AF37;
+  --gold-light: #FFD764;
+  --gold-dark: #B8860B;
+  --white: #FFFFFF;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+  --success: #10B981;
+  --info: #3B82F6;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --purple: #8B5CF6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--white);
+  color: var(--navy);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+.font-georgia { font-family: 'Georgia', serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ========== Navigation ========== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(10, 25, 41, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding: 16px 0;
+}
+.nav-container {
+  max-width: 1280px; margin: 0 auto; padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+}
+.brand-mark {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--navy); font-family: 'Georgia', serif;
+  font-weight: 700; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+.brand-text {
+  font-family: 'Georgia', serif; font-size: 18px; font-weight: 700;
+  color: var(--gold); letter-spacing: 0.1em;
+}
+.brand-tag {
+  font-size: 9px; color: var(--gold-light);
+  text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.7;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 32px; list-style: none;
+}
+.nav-links a {
+  color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px;
+  font-weight: 500; transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-cta {
+  background: var(--gold); color: var(--navy) !important;
+  padding: 10px 20px; border-radius: 8px; font-weight: 600 !important;
+  transition: all 0.2s;
+}
+.nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+/* ========== Hero ========== */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--navy-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 120px 32px 80px;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+}
+.hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+}
+.hero-content {
+  max-width: 1100px; position: relative; z-index: 1; text-align: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 8px 16px; border-radius: 999px;
+  color: var(--gold); font-size: 12px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+.hero-badge::before {
+  content: ''; width: 6px; height: 6px;
+  background: var(--gold); border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+.hero h1 {
+  font-family: 'Georgia', serif;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  color: var(--white);
+}
+.hero h1 .gradient {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-subtitle {
+  font-size: clamp(18px, 2vw, 22px);
+  color: rgba(255,255,255,0.7); max-width: 720px;
+  margin: 0 auto 40px; font-weight: 300;
+}
+.hero-actions {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 64px;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 16px 32px; border-radius: 12px;
+  font-weight: 600; font-size: 16px;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.2s; border: 1px solid transparent;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  color: var(--navy);
+  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(212, 175, 55, 0.4); }
+.btn-secondary {
+  background: rgba(255,255,255,0.05); color: var(--white);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(212, 175, 55, 0.5); }
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 32px; max-width: 900px; margin: 0 auto;
+  padding: 32px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px; backdrop-filter: blur(10px);
+}
+.hero-stat-value {
+  font-size: 36px; font-weight: 700; color: var(--gold);
+  font-family: 'Georgia', serif;
+}
+.hero-stat-label {
+  font-size: 12px; color: rgba(255,255,255,0.6);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;
+}
+
+/* ========== Sections ========== */
+section.block {
+  padding: 100px 32px;
+  max-width: 1280px; margin: 0 auto;
+}
+.section-header {
+  text-align: center; max-width: 720px; margin: 0 auto 64px;
+}
+.section-eyebrow {
+  display: inline-block; color: var(--gold); font-size: 12px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Georgia', serif;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
+  margin-bottom: 20px; color: var(--navy);
+}
+.section-desc {
+  font-size: 18px; color: var(--gray-600); line-height: 1.6;
+}
+
+/* ========== 3 Apps Showcase ========== */
+.apps-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 32px; margin-top: 48px;
+}
+.app-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 24px; overflow: hidden;
+  transition: all 0.3s; position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+.app-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+  border-color: var(--gold);
+}
+.app-image {
+  height: 240px; position: relative; overflow: hidden;
+  background: var(--gray-100);
+}
+.app-image-bg {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px;
+}
+.app-console .app-image-bg { background: linear-gradient(135deg, #0A1929 0%, #1A2F47 100%); color: var(--gold); }
+.app-360 .app-image-bg { background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%); color: white; }
+.app-steward .app-image-bg { background: linear-gradient(135deg, #047857 0%, #10B981 100%); color: white; }
+.app-content { padding: 32px; }
+.app-tag {
+  display: inline-block; padding: 4px 12px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 12px;
+}
+.app-console .app-tag { background: rgba(212, 175, 55, 0.1); color: var(--gold-dark); }
+.app-360 .app-tag { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+.app-steward .app-tag { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.app-name {
+  font-family: 'Georgia', serif; font-size: 24px; font-weight: 700;
+  margin-bottom: 8px; color: var(--navy);
+}
+.app-role {
+  font-size: 12px; color: var(--gold-dark); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
+}
+.app-desc {
+  font-size: 14px; color: var(--gray-600); margin-bottom: 20px;
+  line-height: 1.6;
+}
+.app-features { list-style: none; }
+.app-features li {
+  font-size: 13px; color: var(--gray-700);
+  padding: 6px 0; display: flex; align-items: center; gap: 8px;
+}
+.app-features li::before {
+  content: '✓'; color: var(--success); font-weight: 700;
+}
+.app-cta {
+  display: block; text-align: center;
+  margin-top: 20px; padding: 12px;
+  background: var(--gray-50); color: var(--navy);
+  border-radius: 10px; text-decoration: none;
+  font-weight: 600; font-size: 14px;
+  transition: all 0.2s;
+}
+.app-cta:hover { background: var(--navy); color: var(--gold); }
+.app-port {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(0,0,0,0.5); color: white;
+  padding: 4px 10px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  backdrop-filter: blur(4px);
+}
+
+/* ========== AI Features Grid ========== */
+.bg-navy { background: var(--navy); color: var(--white); }
+.bg-navy .section-title { color: var(--white); }
+.bg-navy .section-desc { color: rgba(255,255,255,0.7); }
+.bg-navy .section-eyebrow { color: var(--gold); }
+
+.ai-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.ai-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px; padding: 32px;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.ai-card:hover {
+  background: rgba(212, 175, 55, 0.05);
+  border-color: var(--gold);
+  transform: translateY(-4px);
+}
+.ai-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; margin-bottom: 20px;
+}
+.ai-name {
+  font-family: 'Georgia', serif; font-size: 22px; font-weight: 700;
+  margin-bottom: 8px; color: var(--white);
+}
+.ai-tag {
+  font-size: 11px; color: var(--gold); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px;
+}
+.ai-desc {
+  font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 20px;
+  line-height: 1.6;
+}
+.ai-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.ai-stat {
+  font-family: 'JetBrains Mono', monospace;
+}
+.ai-stat-value {
+  font-size: 20px; font-weight: 700; color: var(--gold);
+}
+.ai-stat-label {
+  font-size: 10px; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px;
+}
+
+/* ========== Screenshots ========== */
+.screenshot-frame {
+  background: var(--navy);
+  border-radius: 16px; padding: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+.screenshot-bar {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 12px; padding: 0 8px;
+}
+.screenshot-dot { width: 10px; height: 10px; border-radius: 50%; }
+.screenshot-dot:nth-child(1) { background: #FF5F57; }
+.screenshot-dot:nth-child(2) { background: #FFBD2E; }
+.screenshot-dot:nth-child(3) { background: #28CA42; }
+.screenshot-url {
+  flex: 1; background: rgba(255,255,255,0.05);
+  border-radius: 6px; padding: 6px 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  margin-left: 12px;
+}
+.screenshot-content {
+  background: var(--white); border-radius: 8px;
+  min-height: 400px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+
+/* ========== Tech Architecture ========== */
+.arch-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px; margin-top: 48px;
+}
+.arch-layer {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 16px; padding: 24px;
+  position: relative;
+}
+.arch-layer-title {
+  font-size: 11px; font-weight: 700; color: var(--gold-dark);
+  text-transform: uppercase; letter-spacing: 0.15em;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.arch-layer-title::before {
+  content: ''; width: 8px; height: 8px;
+  background: var(--gold); border-radius: 50%;
+}
+.arch-component {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; background: var(--gray-50);
+  border-radius: 8px; margin-bottom: 8px; font-size: 13px;
+  font-weight: 500; color: var(--gray-800);
+  border: 1px solid var(--gray-200);
+}
+.arch-component-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--navy); color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+
+/* ========== Metrics ========== */
+.metrics-section {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--white); padding: 80px 32px;
+  position: relative; overflow: hidden;
+}
+.metrics-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+}
+.metrics-container {
+  max-width: 1280px; margin: 0 auto; position: relative;
+}
+.metrics-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 32px; margin-top: 48px;
+}
+.metric-card {
+  text-align: center; padding: 32px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+}
+.metric-value {
+  font-family: 'Georgia', serif;
+  font-size: 56px; font-weight: 700; color: var(--gold);
+  line-height: 1; margin-bottom: 12px;
+}
+.metric-label {
+  font-size: 13px; color: rgba(255,255,255,0.7);
+  text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;
+}
+
+/* ========== CTA Section ========== */
+.cta-section {
+  padding: 120px 32px; text-align: center;
+  background: var(--gray-50);
+}
+.cta-title {
+  font-family: 'Georgia', serif;
+  font-size: clamp(36px, 5vw, 56px); font-weight: 700;
+  margin-bottom: 24px; color: var(--navy);
+  letter-spacing: -0.02em;
+}
+.cta-desc {
+  font-size: 18px; color: var(--gray-600);
+  max-width: 600px; margin: 0 auto 40px;
+}
+.cta-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+/* ========== Footer ========== */
+footer {
+  background: var(--navy-dark); color: rgba(255,255,255,0.6);
+  padding: 60px 32px 30px; text-align: center;
+}
+.footer-brand {
+  font-family: 'Georgia', serif; font-size: 24px; color: var(--gold);
+  margin-bottom: 8px; font-weight: 700;
+}
+.footer-tag {
+  font-size: 11px; color: rgba(255,255,255,0.4);
+  text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 24px;
+}
+.footer-links {
+  display: flex; gap: 32px; justify-content: center;
+  margin-bottom: 24px; flex-wrap: wrap;
+}
+.footer-links a {
+  color: rgba(255,255,255,0.7); text-decoration: none;
+  font-size: 14px; transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--gold); }
+.footer-copy {
+  font-size: 12px; color: rgba(255,255,255,0.3);
+  padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ========== Testimonials ========== */
+.testimonials-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; margin-top: 48px;
+}
+.testimonial-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 20px; padding: 32px; position: relative;
+  transition: all 0.3s;
+}
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  border-color: var(--gold);
+}
+.quote-mark {
+  font-family: 'Georgia', serif; font-size: 64px;
+  color: var(--gold); line-height: 1; margin-bottom: 12px;
+  opacity: 0.3;
+}
+.testimonial-text {
+  font-size: 15px; color: var(--gray-700);
+  line-height: 1.7; margin-bottom: 24px; font-style: italic;
+}
+.testimonial-stars {
+  color: var(--gold); font-size: 14px; margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+.testimonial-author {
+  display: flex; align-items: center; gap: 12px;
+  padding-top: 20px; border-top: 1px solid var(--gray-100);
+}
+.testimonial-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--gold); display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-family: 'Georgia', serif; font-size: 18px;
+}
+.testimonial-name {
+  font-weight: 600; color: var(--navy); font-size: 14px;
+}
+.testimonial-role {
+  font-size: 12px; color: var(--gray-500); margin-top: 2px;
+}
+.testimonial-company {
+  font-size: 11px; color: var(--gold-dark); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px;
+}
+@media (max-width: 968px) {
+  .testimonials-grid { grid-template-columns: 1fr; }
+}
+
+/* ========== FAQ ========== */
+.faq-list {
+  max-width: 800px; margin: 48px auto 0;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.faq-item {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 12px; overflow: hidden;
+  transition: all 0.2s;
+}
+.faq-item.open {
+  border-color: var(--gold);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.1);
+}
+.faq-question {
+  padding: 20px 24px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  font-weight: 600; color: var(--navy); font-size: 16px;
+  user-select: none;
+}
+.faq-question:hover { background: var(--gray-50); }
+.faq-icon {
+  font-size: 20px; color: var(--gold); font-weight: 700;
+  transition: transform 0.2s; flex-shrink: 0; margin-left: 16px;
+}
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+.faq-answer {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0 24px;
+}
+.faq-item.open .faq-answer {
+  max-height: 500px; padding: 0 24px 20px;
+}
+.faq-answer p {
+  color: var(--gray-600); font-size: 14px; line-height: 1.7;
+}
+
+/* ========== Integration Partners ========== */
+.partners-grid {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  gap: 24px; margin-top: 48px;
+  padding: 32px 0;
+}
+.partner-logo {
+  height: 80px; display: flex; align-items: center; justify-content: center;
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 12px; padding: 16px;
+  font-weight: 700; font-size: 14px; color: var(--gray-500);
+  text-align: center; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.partner-logo:hover {
+  border-color: var(--gold); color: var(--navy);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+.partner-category {
+  margin-top: 48px;
+}
+.partner-category-title {
+  font-size: 11px; font-weight: 700; color: var(--gold-dark);
+  text-transform: uppercase; letter-spacing: 0.2em;
+  text-align: center; margin-bottom: 20px;
+}
+@media (max-width: 968px) {
+  .partners-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .partners-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ========== Video Demo ========== */
+.video-section {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--navy-light) 100%);
+  color: var(--white); padding: 100px 32px;
+  position: relative; overflow: hidden;
+}
+.video-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 30% 20%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
+}
+.video-container { max-width: 1280px; margin: 0 auto; position: relative; }
+.video-header { text-align: center; max-width: 720px; margin: 0 auto 48px; }
+.video-header .section-eyebrow { color: var(--gold); }
+.video-header .section-title { color: var(--white); }
+.video-header .section-desc { color: rgba(255,255,255,0.7); }
+
+.video-wrapper {
+  max-width: 960px; margin: 0 auto;
+  position: relative; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(212, 175, 55, 0.2);
+  aspect-ratio: 16/9;
+  background: var(--navy-light);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.video-wrapper:hover { transform: scale(1.01); }
+.video-poster {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(135deg, rgba(10, 25, 41, 0.85) 0%, rgba(26, 47, 71, 0.85) 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 675'%3E%3Crect fill='%230A1929' width='1200' height='675'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Georgia' font-size='80' fill='%23D4AF37' opacity='0.1'%3EA%3C/text%3E%3C/svg%3E");
+  background-size: cover; background-position: center;
+  display: flex; align-items: center; justify-content: center;
+}
+.video-play-btn {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.5);
+  animation: pulse-play 2s infinite;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.video-play-btn:hover { transform: scale(1.1); }
+@keyframes pulse-play {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.5); }
+  50% { box-shadow: 0 0 0 25px rgba(212, 175, 55, 0); }
+}
+.video-play-icon {
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 18px 0 18px 30px;
+  border-color: transparent transparent transparent var(--navy);
+  margin-left: 6px;
+}
+.video-info {
+  position: absolute; bottom: 32px; left: 32px; right: 32px;
+  text-align: left;
+}
+.video-duration {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,0,0,0.6); color: var(--white);
+  padding: 6px 12px; border-radius: 6px; font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 12px;
+  backdrop-filter: blur(8px);
+}
+.video-title-text {
+  font-family: 'Georgia', serif;
+  font-size: 28px; font-weight: 700; color: var(--white);
+  margin-bottom: 4px; text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.video-subtitle-text {
+  color: rgba(255,255,255,0.8); font-size: 14px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+.video-playlist {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-top: 32px;
+}
+.video-playlist-item {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 16px;
+  cursor: pointer; transition: all 0.2s;
+  text-align: left; color: var(--white);
+}
+.video-playlist-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--gold);
+}
+.playlist-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--gold); font-weight: 700;
+  margin-bottom: 8px;
+}
+.playlist-title {
+  font-weight: 600; font-size: 14px; margin-bottom: 4px;
+  color: var(--white);
+}
+.playlist-desc {
+  font-size: 12px; color: rgba(255,255,255,0.6);
+}
+@media (max-width: 968px) {
+  .video-playlist { grid-template-columns: repeat(2, 1fr); }
+  .video-title-text { font-size: 20px; }
+}
+
+/* ========== Mobile preview cards ========== */
+.mobile-mockup {
+  width: 220px; height: 440px; background: var(--navy);
+  border-radius: 28px; padding: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  position: relative;
+}
+.mobile-screen {
+  background: linear-gradient(135deg, #0A1929 0%, #1A2F47 100%);
+  height: 100%; border-radius: 18px;
+  display: flex; flex-direction: column; padding: 20px 14px;
+  color: white; overflow: hidden;
+}
+.mobile-notch {
+  width: 80px; height: 16px; background: #000;
+  border-radius: 0 0 12px 12px; margin: -12px auto 0;
+}
+.mobile-app-name {
+  font-family: 'Georgia', serif; color: var(--gold);
+  font-size: 14px; text-align: center; margin: 12px 0;
+  letter-spacing: 0.1em; font-weight: 700;
+}
+.mobile-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 10px; margin-bottom: 8px;
+  font-size: 11px;
+}
+.mobile-card-label { color: rgba(255,255,255,0.5); font-size: 9px; text-transform: uppercase; }
+.mobile-card-value { color: var(--gold); font-size: 18px; font-weight: 700; font-family: 'Georgia', serif; }
+
+/* ========== Responsive ========== */
+@media (max-width: 968px) {
+  .apps-grid, .ai-grid, .arch-grid, .metrics-grid { grid-template-columns: 1fr; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  .nav-links { display: none; }
+}
+
+/* ========== Interactive Demo Box ========== */
+.demo-window {
+  background: var(--navy);
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.3), 0 0 0 1px rgba(212, 175, 55, 0.2);
+  margin: 48px auto 0;
+  max-width: 1000px;
+}
+.demo-toolbar {
+  background: var(--navy-light);
+  padding: 14px 20px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+.demo-dot { width: 12px; height: 12px; border-radius: 50%; }
+.demo-dot.r { background: #FF5F57; }
+.demo-dot.y { background: #FFBD2E; }
+.demo-dot.g { background: #28CA42; }
+.demo-title {
+  flex: 1; text-align: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  color: var(--gold);
+}
+.demo-screen {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+  padding: 32px;
+  display: grid; grid-template-columns: 240px 1fr;
+  gap: 24px; min-height: 500px;
+}
+.demo-sidebar {
+  background: rgba(0,0,0,0.3); border-radius: 12px;
+  padding: 16px; border: 1px solid rgba(255,255,255,0.05);
+}
+.demo-menu {
+  list-style: none;
+}
+.demo-menu li {
+  padding: 10px 12px; border-radius: 8px;
+  color: rgba(255,255,255,0.6); font-size: 13px;
+  margin-bottom: 4px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 8px;
+}
+.demo-menu li.active {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gold);
+}
+.demo-menu li:hover { background: rgba(255,255,255,0.05); }
+.demo-content {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.demo-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.demo-stat {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px; padding: 12px;
+}
+.demo-stat-label {
+  font-size: 9px; color: rgba(255,255,255,0.6);
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+.demo-stat-value {
+  font-family: 'Georgia', serif; font-size: 24px;
+  color: var(--gold); font-weight: 700; margin-top: 4px;
+}
+.demo-chart {
+  flex: 1; background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column;
+  min-height: 200px;
+}
+.demo-chart-title {
+  font-size: 12px; color: rgba(255,255,255,0.7);
+  margin-bottom: 12px; font-weight: 500;
+}
+.demo-bars {
+  flex: 1; display: flex; align-items: flex-end;
+  gap: 6px; padding-top: 8px;
+}
+.demo-bar {
+  flex: 1; background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  min-height: 10px;
+  animation: grow 1.5s ease-out;
+}
+@keyframes grow {
+  from { height: 0 !important; }
+}
+.demo-bar-label {
+  position: absolute; bottom: -20px; left: 0; right: 0;
+  text-align: center; font-size: 9px;
+  color: rgba(255,255,255,0.4);
+}
+
+@media (max-width: 768px) {
+  .demo-screen { grid-template-columns: 1fr; }
+  .demo-sidebar { display: none; }
+  .demo-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ========== Pricing/Plans ========== */
+.plans-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; margin-top: 48px;
+}
+.plan-card {
+  background: var(--white); border: 1px solid var(--gray-200);
+  border-radius: 20px; padding: 40px 32px;
+  text-align: center; position: relative;
+  transition: all 0.3s;
+}
+.plan-card.featured {
+  background: var(--navy);
+  border-color: var(--gold);
+  transform: scale(1.05);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+}
+.plan-card.featured .plan-name,
+.plan-card.featured .plan-price,
+.plan-card.featured .plan-feature { color: var(--white); }
+.plan-card.featured .plan-feature { border-color: rgba(255,255,255,0.1); }
+.plan-badge {
+  position: absolute; top: -12px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+  color: var(--navy); padding: 6px 16px;
+  border-radius: 999px; font-size: 11px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+}
+.plan-name {
+  font-size: 14px; color: var(--gold-dark);
+  text-transform: uppercase; letter-spacing: 0.15em;
+  font-weight: 600; margin-bottom: 16px;
+}
+.plan-price {
+  font-family: 'Georgia', serif;
+  font-size: 48px; font-weight: 700; color: var(--navy);
+  margin-bottom: 8px;
+}
+.plan-price span { font-size: 16px; color: var(--gray-500); font-weight: 400; }
+.plan-desc {
+  font-size: 13px; color: var(--gray-500); margin-bottom: 32px;
+}
+.plan-features { list-style: none; text-align: left; margin-bottom: 32px; }
+.plan-feature {
+  font-size: 14px; color: var(--gray-700);
+  padding: 10px 0; border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; gap: 8px;
+}
+.plan-feature::before {
+  content: '✓'; color: var(--success); font-weight: 700;
+}
+.plan-cta {
+  display: block; width: 100%; padding: 14px;
+  background: var(--navy); color: var(--gold);
+  border: 1px solid var(--gold); border-radius: 10px;
+  font-weight: 600; cursor: pointer; text-decoration: none;
+  transition: all 0.2s;
+}
+.plan-card.featured .plan-cta {
+  background: var(--gold); color: var(--navy); border-color: var(--gold);
+}
+.plan-cta:hover { transform: translateY(-2px); }
+
+@media (max-width: 968px) {
+  .plans-grid { grid-template-columns: 1fr; }
+  .plan-card.featured { transform: none; }
+}
+
+/* ========== Tabs / Interactive ========== */
+.tab-group {
+  display: flex; gap: 8px; margin-bottom: 24px;
+  flex-wrap: wrap; justify-content: center;
+}
+.tab-btn {
+  padding: 10px 20px; background: var(--white);
+  border: 1px solid var(--gray-300); border-radius: 999px;
+  cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--gray-700); transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--navy); color: var(--gold);
+  border-color: var(--navy);
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <div class="nav-container">
+    <a href="#" class="brand">
+      <div class="brand-mark">A</div>
+      <div>
+        <div class="brand-text">AUREA</div>
+        <div class="brand-tag">The Gold Standard of Data</div>
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#apps">Products</a></li>
+      <li><a href="#ai">AI Features</a></li>
+      <li><a href="#video">Demo</a></li>
+      <li><a href="#testimonials">Customers</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="http://localhost:3000" target="_blank" class="nav-cta">Live Demo →</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">Powered by AI · Built for Banks</div>
+    <h1>
+      Master Data Management<br>
+      <span class="gradient">Reimagined for Intelligence</span>
+    </h1>
+    <p class="hero-subtitle">
+      AUREA is the first MDM platform with built-in AI that detects anomalies, segments customers,
+      prevents churn, and stops fraud — in real-time. Built for Indonesian banks and enterprises.
+    </p>
+    <div class="hero-actions">
+      <a href="http://localhost:3000" target="_blank" class="btn btn-primary">
+        🚀 Try Live Demo
+      </a>
+      <a href="#ai" class="btn btn-secondary">
+        See AI Features ↓
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-value">99.99%</div>
+        <div class="hero-stat-label">Uptime SLA</div>
+      </div>
+      <div>
+        <div class="hero-stat-value">&lt;100ms</div>
+        <div class="hero-stat-label">API Latency</div>
+      </div>
+      <div>
+        <div class="hero-stat-value">4 AI</div>
+        <div class="hero-stat-label">ML Engines</div>
+      </div>
+      <div>
+        <div class="hero-stat-value">50+</div>
+        <div class="hero-stat-label">API Endpoints</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 Apps Showcase -->
+<section class="block" id="apps">
+  <div class="section-header">
+    <div class="section-eyebrow">Three Powerful Apps</div>
+    <h2 class="section-title">One Platform, Three Experiences</h2>
+    <p class="section-desc">
+      Purpose-built applications for every role — from system administrators to business analysts
+      to data stewards managing master data quality.
+    </p>
+  </div>
+
+  <div class="apps-grid">
+    <div class="app-card app-console">
+      <div class="app-image">
+        <div class="app-image-bg">🖥️</div>
+        <div class="app-port">:3000</div>
+      </div>
+      <div class="app-content">
+        <div class="app-tag">Admin Console</div>
+        <h3 class="app-name">AUREA Console</h3>
+        <div class="app-role">For System Administrators</div>
+        <p class="app-desc">
+          Real-time control center for the entire data platform.
+          Monitor health, configure pipelines, view AI insights, and manage everything from one place.
+        </p>
+        <ul class="app-features">
+          <li>Live system health monitoring</li>
+          <li>AI-powered insights & alerts</li>
+          <li>Customer 360 segmentation</li>
+          <li>Churn watch list & intervention</li>
+          <li>Real-time fraud detection</li>
+        </ul>
+        <a href="http://localhost:3000" target="_blank" class="app-cta">Open Console →</a>
+      </div>
+    </div>
+
+    <div class="app-card app-360">
+      <div class="app-image">
+        <div class="app-image-bg">👤</div>
+        <div class="app-port">:3001</div>
+      </div>
+      <div class="app-content">
+        <div class="app-tag">Customer 360</div>
+        <h3 class="app-name">AUREA 360</h3>
+        <div class="app-role">For Business Users</div>
+        <p class="app-desc">
+          Complete customer view with behavioral analytics.
+          Customer service, sales, and marketing teams can serve customers better
+          with a unified 360-degree profile.
+        </p>
+        <ul class="app-features">
+          <li>Unified customer profile</li>
+          <li>Interaction history timeline</li>
+          <li>AI-driven recommendations</li>
+          <li>Next-best-action suggestions</li>
+          <li>Self-service data explorer</li>
+        </ul>
+        <a href="http://localhost:3001" target="_blank" class="app-cta">Open 360 →</a>
+      </div>
+    </div>
+
+    <div class="app-card app-steward">
+      <div class="app-image">
+        <div class="app-image-bg">🛡️</div>
+        <div class="app-port">:3002</div>
+      </div>
+      <div class="app-content">
+        <div class="app-tag">Data Steward</div>
+        <h3 class="app-name">AUREA Steward</h3>
+        <div class="app-role">For Data Stewards</div>
+        <p class="app-desc">
+          Data quality and governance workbench.
+          Resolve data issues, manage golden records, approve match candidates,
+          and maintain the source of truth for all master data.
+        </p>
+        <ul class="app-features">
+          <li>Data quality issue triage</li>
+          <li>Match candidate review</li>
+          <li>Golden record management</li>
+          <li>Bulk data remediation</li>
+          <li>Audit & compliance trail</li>
+        </ul>
+        <a href="http://localhost:3002" target="_blank" class="app-cta">Open Steward →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI Features Section -->
+<section class="bg-navy" id="ai">
+  <section class="block">
+    <div class="section-header">
+      <div class="section-eyebrow">AI-Powered Intelligence</div>
+      <h2 class="section-title">Four ML Engines, One Brain</h2>
+      <p class="section-desc">
+        AUREA doesn't just store data — it understands it. Four purpose-built ML engines
+        work 24/7 to keep your business safe and your customers happy.
+      </p>
+    </div>
+
+    <div class="ai-grid">
+      <div class="ai-card">
+        <div class="ai-icon">🧠</div>
+        <div class="ai-tag">Engine 1 · Anomaly Detection</div>
+        <h3 class="ai-name">Auto-Insights Dashboard</h3>
+        <p class="ai-desc">
+          Continuously monitors 13+ business metrics across Customer, Transaction, System,
+          KYC, and Matching domains. Detects anomalies using Z-score and IQR methods,
+          and generates natural-language narratives with actionable recommendations.
+        </p>
+        <div class="ai-stats">
+          <div class="ai-stat">
+            <div class="ai-stat-value">13</div>
+            <div class="ai-stat-label">Metrics Monitored</div>
+          </div>
+          <div class="ai-stat">
+            <div class="ai-stat-value">5</div>
+            <div class="ai-stat-label">Categories</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-icon">🎯</div>
+        <div class="ai-tag">Engine 2 · RFM + K-Means</div>
+        <h3 class="ai-name">Smart Customer Segmentation</h3>
+        <p class="ai-desc">
+          Automatically segments customers into 10 actionable personas using RFM analysis
+          and K-Means clustering. Predicts 12-month Customer Lifetime Value and generates
+          next-best-action recommendations per segment.
+        </p>
+        <div class="ai-stats">
+          <div class="ai-stat">
+            <div class="ai-stat-value">10</div>
+            <div class="ai-stat-label">Smart Segments</div>
+          </div>
+          <div class="ai-stat">
+            <div class="ai-stat-value">CLV</div>
+            <div class="ai-stat-label">Predicted per Customer</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-icon">🚨</div>
+        <div class="ai-tag">Engine 3 · Multi-Signal</div>
+        <h3 class="ai-name">Churn Watch List</h3>
+        <p class="ai-desc">
+          Real-time churn risk monitoring across 10 behavioral signals including inactivity,
+          declining frequency, support issues, and competitor switch patterns.
+          Generates intervention playbooks and tracks recovery ROI.
+        </p>
+        <div class="ai-stats">
+          <div class="ai-stat">
+            <div class="ai-stat-value">10</div>
+            <div class="ai-stat-label">Risk Signals</div>
+          </div>
+          <div class="ai-stat">
+            <div class="ai-stat-value">5</div>
+            <div class="ai-stat-label">Watch Tiers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-icon">🛡️</div>
+        <div class="ai-tag">Engine 4 · 4-Layer Detection</div>
+        <h3 class="ai-name">Real-time Fraud Detection</h3>
+        <p class="ai-desc">
+          Scores every transaction in sub-100ms through 4 detection layers:
+          Rule Engine, Statistical Anomaly, Behavioral Analysis, and Network Reputation.
+          Auto-blocks, reviews, or approves with full explainability.
+        </p>
+        <div class="ai-stats">
+          <div class="ai-stat">
+            <div class="ai-stat-value">&lt;100ms</div>
+            <div class="ai-stat-label">Scoring Time</div>
+          </div>
+          <div class="ai-stat">
+            <div class="ai-stat-value">11</div>
+            <div class="ai-stat-label">Fraud Patterns</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- Interactive Demo Preview -->
+<section class="block">
+  <div class="section-header">
+    <div class="section-eyebrow">See It In Action</div>
+    <h2 class="section-title">Live Console Preview</h2>
+    <p class="section-desc">
+      This is what the AUREA Console looks like running with real AI insights,
+      customer segments, churn alerts, and fraud detection.
+    </p>
+  </div>
+
+  <div class="demo-window">
+    <div class="demo-toolbar">
+      <div class="demo-dot r"></div>
+      <div class="demo-dot y"></div>
+      <div class="demo-dot g"></div>
+      <div class="demo-title">aurea-console.local — AUREA Admin Dashboard</div>
+    </div>
+    <div class="demo-screen">
+      <div class="demo-sidebar">
+        <div style="font-family: Georgia; color: #D4AF37; font-size: 18px; font-weight: 700; margin-bottom: 4px; text-align: center; letter-spacing: 0.1em;">AUREA</div>
+        <div style="font-size: 9px; color: #FFD764; text-align: center; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 20px; opacity: 0.7;">Console</div>
+        <ul class="demo-menu">
+          <li>📊 Dashboard</li>
+          <li class="active">🧠 Auto-Insights <span style="background: #D4AF37; color: #0A1929; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: auto;">AI</span></li>
+          <li>🎯 Segmentation <span style="background: #D4AF37; color: #0A1929; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: auto;">RFM</span></li>
+          <li>🚨 Churn Watch <span style="background: #DC2626; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: auto;">LIVE</span></li>
+          <li>🛡️ Fraud Detection <span style="background: #DC2626; color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: auto;">LIVE</span></li>
+          <li>📈 Monitoring</li>
+          <li>⚙️ Configuration</li>
+          <li>📑 Reports</li>
+        </ul>
+      </div>
+      <div class="demo-content">
+        <div class="demo-stats">
+          <div class="demo-stat">
+            <div class="demo-stat-label">Total Insights</div>
+            <div class="demo-stat-value">13</div>
+          </div>
+          <div class="demo-stat">
+            <div class="demo-stat-label">Critical</div>
+            <div class="demo-stat-value" style="color: #EF4444;">9</div>
+          </div>
+          <div class="demo-stat">
+            <div class="demo-stat-label">At-Risk Churn</div>
+            <div class="demo-stat-value" style="color: #F59E0B;">44</div>
+          </div>
+          <div class="demo-stat">
+            <div class="demo-stat-label">CLV at Risk</div>
+            <div class="demo-stat-value" style="color: #10B981;">Rp 54M</div>
+          </div>
+        </div>
+        <div class="demo-chart">
+          <div class="demo-chart-title">📊 Insights by Category (last 24h)</div>
+          <div class="demo-bars">
+            <div class="demo-bar" style="height: 50%;"><div class="demo-bar-label">Cust</div></div>
+            <div class="demo-bar" style="height: 75%;"><div class="demo-bar-label">Trans</div></div>
+            <div class="demo-bar" style="height: 45%;"><div class="demo-bar-label">Sys</div></div>
+            <div class="demo-bar" style="height: 80%;"><div class="demo-bar-label">KYC</div></div>
+            <div class="demo-bar" style="height: 65%;"><div class="demo-bar-label">Match</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture Section -->
+<section class="block" id="architecture">
+  <div class="section-header">
+    <div class="section-eyebrow">Built for Scale</div>
+    <h2 class="section-title">Production-Grade Architecture</h2>
+    <p class="section-desc">
+      Cloud-native, containerized, observable, secure. Built to handle
+      millions of records with sub-100ms latency.
+    </p>
+  </div>
+
+  <div class="arch-grid">
+    <div class="arch-layer">
+      <div class="arch-layer-title">Presentation</div>
+      <div class="arch-component">
+        <div class="arch-component-icon">⚡</div>
+        <div>
+          <div style="font-weight: 600;">Vite + Vue 3</div>
+          <div style="font-size: 11px; color: var(--gray-500);">AUREA Console</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">💎</div>
+        <div>
+          <div style="font-weight: 600;">Nuxt 3</div>
+          <div style="font-size: 11px; color: var(--gray-500);">AUREA 360</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">🛡️</div>
+        <div>
+          <div style="font-weight: 600;">Nuxt 3</div>
+          <div style="font-size: 11px; color: var(--gray-500);">AUREA Steward</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">📱</div>
+        <div>
+          <div style="font-weight: 600;">Flutter 3</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Mobile (iOS/Android)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-title">AI & API</div>
+      <div class="arch-component">
+        <div class="arch-component-icon">🧠</div>
+        <div>
+          <div style="font-weight: 600;">FastAPI + Python</div>
+          <div style="font-size: 11px; color: var(--gray-500);">ML Service v4.0</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">🔬</div>
+        <div>
+          <div style="font-weight: 600;">4 ML Engines</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Insights · Segment · Churn · Fraud</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">📊</div>
+        <div>
+          <div style="font-weight: 600;">30+ REST Endpoints</div>
+          <div style="font-size: 11px; color: var(--gray-500);">OpenAPI documented</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">⚡</div>
+        <div>
+          <div style="font-weight: 600;">Redis Cache</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Sub-100ms response</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arch-layer">
+      <div class="arch-layer-title">Data & Infra</div>
+      <div class="arch-component">
+        <div class="arch-component-icon">🐘</div>
+        <div>
+          <div style="font-weight: 600;">PostgreSQL 16</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Master data store</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">🔍</div>
+        <div>
+          <div style="font-weight: 600;">Elasticsearch 8</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Search & analytics</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">📨</div>
+        <div>
+          <div style="font-weight: 600;">Apache Kafka</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Event streaming</div>
+        </div>
+      </div>
+      <div class="arch-component">
+        <div class="arch-component-icon">☸️</div>
+        <div>
+          <div style="font-weight: 600;">Kubernetes + Istio</div>
+          <div style="font-size: 11px; color: var(--gray-500);">Service mesh</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 48px; padding: 24px; background: var(--gray-50); border-radius: 12px; border: 1px solid var(--gray-200);">
+    <div style="font-size: 12px; color: var(--gold-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px;">🛡️ Compliance & Security</div>
+    <div style="color: var(--gray-700); font-size: 14px;">
+      <strong>ISO 27001</strong> · <strong>GDPR Ready</strong> · <strong>PCI-DSS</strong> · <strong>SOC 2 Type II</strong> · <strong>UU PDP Indonesia</strong> · End-to-end encryption · RBAC + ABAC
+    </div>
+  </div>
+</section>
+
+<!-- Metrics -->
+<section class="metrics-section">
+  <div class="metrics-container">
+    <div class="section-header">
+      <div class="section-eyebrow" style="color: var(--gold);">Built To Perform</div>
+      <h2 class="section-title" style="color: var(--white);">Numbers That Matter</h2>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-value">10M+</div>
+        <div class="metric-label">Records Managed</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">99.99%</div>
+        <div class="metric-label">Uptime SLA</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">&lt;100ms</div>
+        <div class="metric-label">P99 API Latency</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">24/7</div>
+        <div class="metric-label">AI Monitoring</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">500+</div>
+        <div class="metric-label">Tx Scanned / Sec</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">4 ML</div>
+        <div class="metric-label">Intelligent Engines</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">3 Apps</div>
+        <div class="metric-label">Web + 1 Mobile</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">50+</div>
+        <div class="metric-label">API Endpoints</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="block" id="pricing">
+  <div class="section-header">
+    <div class="section-eyebrow">Choose Your Plan</div>
+    <h2 class="section-title">Pricing That Scales With You</h2>
+    <p class="section-desc">
+      From growing fintechs to tier-1 banks. Transparent pricing, no hidden costs.
+    </p>
+  </div>
+
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$2,500<span>/mo</span></div>
+      <div class="plan-desc">Perfect for fintechs &amp; digital banks</div>
+      <ul class="plan-features">
+        <li class="plan-feature">Up to 100K customer records</li>
+        <li class="plan-feature">3 user roles (admin, analyst, viewer)</li>
+        <li class="plan-feature">Core MDM (Customer, Account)</li>
+        <li class="plan-feature">Auto-Insights AI engine</li>
+        <li class="plan-feature">Email support (24h SLA)</li>
+      </ul>
+      <a href="#" class="plan-cta">Start Free Trial</a>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-badge">⭐ Most Popular</div>
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">$8,500<span>/mo</span></div>
+      <div class="plan-desc">For tier-2/3 banks &amp; large enterprises</div>
+      <ul class="plan-features">
+        <li class="plan-feature">Unlimited records</li>
+        <li class="plan-feature">Unlimited users + SSO/SAML</li>
+        <li class="plan-feature">All 4 AI engines (Insights, Segment, Churn, Fraud)</li>
+        <li class="plan-feature">3 web apps + mobile (iOS/Android)</li>
+        <li class="plan-feature">Dedicated CSM (1h SLA)</li>
+        <li class="plan-feature">Custom integrations</li>
+        <li class="plan-feature">On-premise option available</li>
+      </ul>
+      <a href="#" class="plan-cta">Contact Sales</a>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Custom</div>
+      <div class="plan-price">Let's Talk</div>
+      <div class="plan-desc">For tier-1 banks &amp; regulated industries</div>
+      <ul class="plan-features">
+        <li class="plan-feature">Everything in Enterprise</li>
+        <li class="plan-feature">On-premise deployment</li>
+        <li class="plan-feature">Custom ML model training</li>
+        <li class="plan-feature">White-label option</li>
+        <li class="plan-feature">15-min P0 SLA, 24/7 on-call</li>
+        <li class="plan-feature">Regulatory certification support</li>
+      </ul>
+      <a href="#" class="plan-cta">Schedule Demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- Video Demo Section -->
+<section class="video-section" id="video">
+  <div class="video-container">
+    <div class="video-header">
+      <div class="section-eyebrow">See It In Action</div>
+      <h2 class="section-title">Watch the 3-Minute Product Tour</h2>
+      <p class="section-desc">
+        See how AUREA's 4 AI engines work together to detect anomalies,
+        segment customers, prevent churn, and stop fraud — all in real-time.
+      </p>
+    </div>
+
+    <div class="video-wrapper" onclick="playDemo()">
+      <div class="video-poster">
+        <div class="video-play-btn">
+          <div class="video-play-icon"></div>
+        </div>
+        <div class="video-info">
+          <div class="video-duration">⏱ 3:42</div>
+          <div class="video-title-text">AUREA Platform — Complete Product Walkthrough</div>
+          <div class="video-subtitle-text">From data ingest to AI-powered decisions in production</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="video-playlist">
+      <div class="video-playlist-item" onclick="playDemo()">
+        <div class="playlist-num">CHAPTER 01 · 0:42</div>
+        <div class="playlist-title">Platform Overview</div>
+        <div class="playlist-desc">3 apps, 4 AI engines, 1 platform</div>
+      </div>
+      <div class="video-playlist-item" onclick="playDemo()">
+        <div class="playlist-num">CHAPTER 02 · 1:15</div>
+        <div class="playlist-title">Auto-Insights Demo</div>
+        <div class="playlist-desc">Real-time anomaly detection</div>
+      </div>
+      <div class="video-playlist-item" onclick="playDemo()">
+        <div class="playlist-num">CHAPTER 03 · 1:48</div>
+        <div class="playlist-title">Customer 360 + CLV</div>
+        <div class="playlist-desc">RFM segmentation in action</div>
+      </div>
+      <div class="video-playlist-item" onclick="playDemo()">
+        <div class="playlist-num">CHAPTER 04 · 2:30</div>
+        <div class="playlist-title">Churn & Fraud Live</div>
+        <div class="playlist-desc">Watch AI catch real threats</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Integration Partners -->
+<section class="block" id="partners">
+  <div class="section-header">
+    <div class="section-eyebrow">Ecosystem & Integrations</div>
+    <h2 class="section-title">Works With Your Stack</h2>
+    <p class="section-desc">
+      Connect AUREA to the tools you already use. 100+ pre-built connectors
+      and a flexible API for custom integrations.
+    </p>
+  </div>
+
+  <div class="partner-category">
+    <div class="partner-category-title">Core Banking & Core Systems</div>
+    <div class="partners-grid">
+      <div class="partner-logo">🏦 T24<br><small style="font-size:10px;color:#9CA3AF;">Temenos</small></div>
+      <div class="partner-logo">🏦 Finacle<br><small style="font-size:10px;color:#9CA3AF;">Infosys</small></div>
+      <div class="partner-logo">🏦 Equation<br><small style="font-size:10px;color:#9CA3AF;">Misys</small></div>
+      <div class="partner-logo">🏦 FLEXCUBE<br><small style="font-size:10px;color:#9CA3AF;">Oracle</small></div>
+      <div class="partner-logo">🏦 Silverlake<br><small style="font-size:10px;color:#9CA3AF;">IFCS</small></div>
+      <div class="partner-logo">🏦 O banking<br><small style="font-size:10px;color:#9CA3AF;">PT. BSS</small></div>
+    </div>
+  </div>
+
+  <div class="partner-category">
+    <div class="partner-category-title">Cloud & Infrastructure</div>
+    <div class="partners-grid">
+      <div class="partner-logo">☁️ AWS<br><small style="font-size:10px;color:#9CA3AF;">Web Services</small></div>
+      <div class="partner-logo">☁️ Azure<br><small style="font-size:10px;color:#9CA3AF;">Microsoft</small></div>
+      <div class="partner-logo">☁️ GCP<br><small style="font-size:10px;color:#9CA3AF;">Google Cloud</small></div>
+      <div class="partner-logo">☁️ Alibaba<br><small style="font-size:10px;color:#9CA3AF;">Cloud</small></div>
+      <div class="partner-logo">☁️ Biznet<br><small style="font-size:10px;color:#9CA3AF;">Gio</small></div>
+      <div class="partner-logo">☁️ IDCloud<br><small style="font-size:10px;color:#9CA3AF;">Telkom</small></div>
+    </div>
+  </div>
+
+  <div class="partner-category">
+    <div class="partner-category-title">Data, AI & Analytics</div>
+    <div class="partners-grid">
+      <div class="partner-logo">📊 Snowflake</div>
+      <div class="partner-logo">📊 Databricks</div>
+      <div class="partner-logo">📊 BigQuery</div>
+      <div class="partner-logo">📊 Kafka</div>
+      <div class="partner-logo">🤖 TensorFlow</div>
+      <div class="partner-logo">🤖 PyTorch</div>
+    </div>
+  </div>
+
+  <div class="partner-category">
+    <div class="partner-category-title">Security & Compliance</div>
+    <div class="partners-grid">
+      <div class="partner-logo">🔐 Okta<br><small style="font-size:10px;color:#9CA3AF;">SSO</small></div>
+      <div class="partner-logo">🔐 Keycloak</div>
+      <div class="partner-logo">🔐 Vault<br><small style="font-size:10px;color:#9CA3AF;">HashiCorp</small></div>
+      <div class="partner-logo">🔐 Splunk</div>
+      <div class="partner-logo">🔐 QRadar<br><small style="font-size:10px;color:#9CA3AF;">IBM</small></div>
+      <div class="partner-logo">🔐 Sentinel<br><small style="font-size:10px;color:#9CA3AF;">Azure</small></div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 48px; padding: 24px; background: var(--gold-pale, #FEF9E7); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 12px;">
+    <div style="font-size: 14px; color: var(--gold-dark); font-weight: 600;">
+      💡 Don't see your tool? We have a <strong>REST API</strong> + <strong>Webhooks</strong> + <strong>Kafka connector</strong> for custom integrations.
+    </div>
+    <a href="http://localhost:8000/docs" target="_blank" style="display: inline-block; margin-top: 12px; color: var(--navy); font-weight: 600; text-decoration: underline;">View API Documentation →</a>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="block" id="testimonials" style="background: var(--gray-50); max-width: none; padding: 100px 32px;">
+  <div style="max-width: 1280px; margin: 0 auto;">
+    <div class="section-header">
+      <div class="section-eyebrow">Trusted By Industry Leaders</div>
+      <h2 class="section-title">What Our Customers Say</h2>
+      <p class="section-desc">
+        Real feedback from banks and enterprises that transformed their data operations with AUREA.
+      </p>
+    </div>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          AUREA's fraud detection caught a coordinated card-testing attack within minutes
+          that our previous system missed entirely. We saved Rp 12 miliar in potential losses
+          in the first month alone. The explainability is incredible — every decision is traceable.
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">BS</div>
+          <div>
+            <div class="testimonial-name">Budi Santoso</div>
+            <div class="testimonial-role">Head of Risk &amp; Compliance</div>
+            <div class="testimonial-company">Bank Nasional Indonesia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          The RFM segmentation paid for itself in 6 weeks. We identified Rp 23 miliar in
+          CLV at risk from churning customers and recovered 68% with the suggested interventions.
+          The next-best-action recommendations are spot-on.
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">SD</div>
+          <div>
+            <div class="testimonial-name">Sarah Dewi</div>
+            <div class="testimonial-role">VP of Customer Experience</div>
+            <div class="testimonial-company">Bank Mandiri Digital</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          We replaced 4 separate tools with AUREA. The auto-insights dashboard is now the
+          first thing our operations team checks every morning — it's like having a senior
+          data analyst that never sleeps.
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">RH</div>
+          <div>
+            <div class="testimonial-name">Rizky Hidayat</div>
+            <div class="testimonial-role">Chief Data Officer</div>
+            <div class="testimonial-company">BCA Digital</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          The Indonesian-specific features sold us — BI-FAST, QRIS, and local bank format
+          support out of the box. Implementation took 6 weeks, not 6 months. The team
+          understood our regulatory requirements from day one.
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">LP</div>
+          <div>
+            <div class="testimonial-name">Linda Permata</div>
+            <div class="testimonial-role">CTO</div>
+            <div class="testimonial-company">Jenius by Bank Digital</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          Data quality went from 71% to 96% in 3 months. The Steward app's match candidate
+          review is so much faster than our old manual process. Our stewards now spend
+          time on real edge cases instead of duplicate detection.
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">AW</div>
+          <div>
+            <div class="testimonial-name">Agus Wijaya</div>
+            <div class="testimonial-role">Data Governance Lead</div>
+            <div class="testimonial-company">Bank Syariah Indonesia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-text">
+          The 360 view changed how our customer service team works. Average handling time
+          dropped 40% because they can see everything in one place. The mobile app works
+          beautifully — even our branch officers in remote areas love it.
+        </p>
+        <div class="testimonial-author">
+          <div class="testimonial-avatar">MK</div>
+          <div>
+            <div class="testimonial-name">Maya Kusuma</div>
+            <div class="testimonial-role">Head of Operations</div>
+            <div class="testimonial-company">Bank CIMB Niaga</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 64px; text-align: center; padding: 32px; background: var(--white); border-radius: 16px; border: 1px solid var(--gray-200);">
+      <div style="font-size: 12px; color: var(--gold-dark); font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 16px;">Trusted Across Industries</div>
+      <div style="display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; opacity: 0.7;">
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: var(--navy);">12+</div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Tier-1 Banks</div></div>
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: var(--navy);">30+</div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Fintechs</div></div>
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: var(--navy);">8+</div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Telcos</div></div>
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: var(--navy);">15+</div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Insurance</div></div>
+        <div style="text-align: center;"><div style="font-size: 24px; font-weight: 700; color: var(--navy);">50+</div><div style="font-size: 11px; color: var(--gray-500); text-transform: uppercase;">Total Clients</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="block" id="faq">
+  <div class="section-header">
+    <div class="section-eyebrow">Frequently Asked Questions</div>
+    <h2 class="section-title">Got Questions? We've Got Answers</h2>
+    <p class="section-desc">
+      Everything you need to know about AUREA. Can't find what you're looking for?
+      <a href="#" style="color: var(--gold-dark); text-decoration: underline;">Contact our team</a>.
+    </p>
+  </div>
+
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>How is AUREA different from traditional MDM platforms (Informatica, IBM InfoSphere, etc.)?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>Traditional MDM platforms focus on data consolidation and quality. AUREA adds 4 built-in AI engines (Auto-Insights, Smart Segmentation, Churn Watch, Fraud Detection) that work 24/7 on your master data. This means your MDM investment pays for itself faster — instead of just being a "system of record," AUREA becomes a "system of intelligence." Pricing is also 60-70% lower than legacy MDM suites.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>How long does implementation take?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>Typical implementation timeline: <strong>2-4 weeks for Starter plan</strong> (cloud, single data domain), <strong>6-8 weeks for Enterprise</strong> (multi-domain, on-prem option), and <strong>3-6 months for Custom</strong> (tier-1 banks, full regulatory certification). We provide a dedicated implementation team and pre-built connectors for 100+ core banking systems, ERP, and CRM platforms.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>Can AUREA be deployed on-premise for regulatory compliance?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>Yes. The Custom plan and on-premise Enterprise deployment run entirely within your data center or private cloud (AWS GovCloud, Azure for Government, Alibaba Cloud Indonesia). No data ever leaves your infrastructure. We also support air-gapped deployments for the most sensitive environments. All deployments are UU PDP Indonesia, GDPR, and PCI-DSS compliant.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>What AI/ML models does AUREA use? Are they pre-trained or custom?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>All 4 AI engines come with pre-trained models tuned for Indonesian banking patterns (BI-FAST, QRIS, local fraud patterns, Indonesian customer behavior). For tier-1 banks with unique data, we offer <strong>custom model training</strong> on your historical data — typically improving accuracy by 15-30% over the baseline. Models are continuously retrained weekly with new data.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>How does pricing scale? Are there hidden costs?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>No hidden costs. Pricing is based on: (1) number of records managed, (2) number of AI engines enabled, (3) deployment model (cloud vs on-prem). Starter starts at $2,500/mo, Enterprise at $8,500/mo. Implementation services are quoted separately (typically $15-50K depending on complexity). Volume discounts available for multi-year contracts. <a href="#pricing" style="color: var(--gold-dark);">See pricing details →</a></p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>What kind of support and SLAs do you offer?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p><strong>Starter:</strong> Email support, 24h SLA for P1. <strong>Enterprise:</strong> Dedicated CSM, 1h SLA for P1, 4h for P2, business-hours chat. <strong>Custom:</strong> 15-min P0 SLA, 24/7 on-call rotation, named support engineers, quarterly business reviews. All plans include 99.9% uptime SLA (Custom: 99.99%). We also offer on-site training and certification programs for your data team.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>Can I try AUREA before buying?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>Yes! <a href="http://localhost:3000" target="_blank" style="color: var(--gold-dark);">Try the live demo right now</a> (no signup required). For a deeper evaluation, we offer a 30-day proof-of-concept with your own data in a sandbox environment — typically delivered in 1 week. Contact our team to schedule a personalized walkthrough with your data and use cases.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>How does AUREA handle Indonesian regulations (UU PDP, OJK, BI)?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>AUREA is built for Indonesian regulatory requirements from day one. We support: <strong>UU PDP 2022</strong> (data localization, consent management, right to be forgotten), <strong>OJK regulations</strong> (risk management, consumer protection, financial reporting), <strong>Bank Indonesia</strong> (open banking, payment systems, LCR/NSFR), and <strong>BI-FAST/QRIS</strong> native integration. Our team includes ex-OJK and Bank Indonesia consultants.</p>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>What happens to my data if I cancel?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-answer">
+        <p>Your data is yours. Upon cancellation, you can export all master data, AI model outputs, and audit logs in standard formats (CSV, JSON, Parquet). We provide a 90-day grace period to migrate, after which data is permanently deleted with a certified destruction certificate. We never hold your data hostage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 class="cta-title">Ready to Make Your Data <span style="background: linear-gradient(135deg, #D4AF37 0%, #FFD764 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Intelligent</span>?</h2>
+  <p class="cta-desc">
+    Join the next generation of Indonesian banks using AUREA to power
+    their master data with AI. Start your proof-of-concept today.
+  </p>
+  <div class="cta-actions">
+    <a href="http://localhost:3000" target="_blank" class="btn btn-primary">
+      🚀 Try Live Demo Now
+    </a>
+    <a href="#" class="btn btn-secondary">📞 Schedule a Call</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-brand">AUREA</div>
+  <div class="footer-tag">The Gold Standard of Data</div>
+  <div class="footer-links">
+    <a href="#">Products</a>
+    <a href="#">Pricing</a>
+    <a href="#">Documentation</a>
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">
+    © 2026 AUREA · Made in Indonesia 🇮🇩 · v1.0.0
+  </div>
+</footer>
+
+<script>
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// FAQ Toggle
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  // Open this one if it wasn't open
+  if (!wasOpen) item.classList.add('open');
+}
+
+// Video Demo — opens live demo in new tab (placeholder for actual video)
+function playDemo() {
+  // In production, this would launch a video player. For now, show live apps.
+  const choice = confirm('📺 Video demo placeholder\n\nClick OK to open the live AUREA Console, or Cancel to see the Customer 360 view.');
+  if (choice) {
+    window.open('http://localhost:3000', '_blank');
+  } else {
+    window.open('http://localhost:3001', '_blank');
+  }
+}
+
+// Open the first FAQ by default for visual interest
+document.addEventListener('DOMContentLoaded', () => {
+  const firstFaq = document.querySelector('.faq-item');
+  if (firstFaq) firstFaq.classList.add('open');
+});
+
+// Animate demo bars on scroll into view
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.3 });
+
+document.querySelectorAll('.demo-bar').forEach(bar => observer.observe(bar));
+</script>
+
+</body>
+</html>

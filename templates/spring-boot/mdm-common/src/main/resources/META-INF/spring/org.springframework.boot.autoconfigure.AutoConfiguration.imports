@@ -1,0 +1,4 @@
+com.bankxyz.mdm.common.config.KafkaConfig
+com.bankxyz.mdm.common.config.RedisConfig
+com.bankxyz.mdm.common.config.OpenApiConfig
+com.bankxyz.mdm.common.filter.CorrelationIdFilter

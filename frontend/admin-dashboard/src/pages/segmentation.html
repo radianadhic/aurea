@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUREA — Smart Customer Segmentation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Georgia&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0A1929;
+      --navy-light: #1A2F47;
+      --gold: #D4AF37;
+      --gold-light: #FFD764;
+      --white: #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-500: #6B7280;
+      --gray-700: #374151;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--gray-50);
+      color: var(--navy);
+      margin: 0;
+    }
+    .font-georgia { font-family: 'Georgia', serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .gradient-gold {
+      background: linear-gradient(135deg, #D4AF37 0%, #FFD764 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 80px;
+      height: 80px;
+      background: var(--gold);
+      opacity: 0.1;
+      border-radius: 50%;
+      transform: translate(20px, -20px);
+    }
+    .segment-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--gray-200);
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .segment-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--seg-color, var(--gold));
+    }
+    .segment-card:hover {
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .segment-icon {
+      font-size: 32px;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--seg-color-bg, rgba(212, 175, 55, 0.1));
+    }
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .risk-LOW { background: #DCFCE7; color: #166534; }
+    .risk-MEDIUM { background: #FEF3C7; color: #92400E; }
+    .risk-HIGH { background: #FFEDD5; color: #9A3412; }
+    .risk-CRITICAL { background: #FEE2E2; color: #991B1B; }
+    .refresh-btn {
+      background: var(--navy);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: var(--gold); color: var(--navy); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--gray-500);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      color: var(--navy);
+      border-bottom-color: var(--gold);
+    }
+    .tab-btn:hover { color: var(--navy); }
+    .customer-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 80px 100px 100px 100px 80px;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-200);
+      transition: background 0.15s;
+    }
+    .customer-row:hover { background: var(--gray-50); }
+    .customer-row.header {
+      font-weight: 600;
+      color: var(--gray-500);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--gray-50);
+    }
+    .rfm-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--navy);
+      color: var(--gold);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .clv-bar {
+      height: 6px;
+      background: var(--gray-200);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .clv-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 25, 41, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      max-width: 1100px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .chart-container { position: relative; height: 240px; }
+    .loading-shimmer {
+      background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .heatmap-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .search-input {
+      background: white;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      padding: 8px 12px 8px 36px;
+      font-size: 14px;
+      width: 240px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+      background-size: 16px;
+    }
+    .search-input:focus { outline: none; border-color: var(--gold); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="flex items-center gap-2 text-gray-500 hover:text-gray-700">
+          <span>←</span> <span>Back to Console</span>
+        </a>
+        <div class="h-6 w-px bg-gray-300"></div>
+        <h1 class="font-georgia text-2xl font-bold text-navy">
+          <span class="gradient-gold">Smart Customer</span> Segmentation
+        </h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="lastUpdated" class="text-xs text-gray-500 font-mono"></span>
+        <button id="refreshBtn" class="refresh-btn flex items-center gap-2">
+          <span id="refreshIcon">↻</span>
+          <span>Regenerate</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Summary Stats -->
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div class="stat-card">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Total Customers</div>
+        <div class="text-3xl font-bold" id="statTotal">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Total Revenue</div>
+        <div class="text-2xl font-bold" id="statRevenue">--</div>
+        <div class="text-xs text-gray-300">IDR</div>
+      </div>
+      <div class="stat-card" style="border-color: #D4AF37;">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Champions</div>
+        <div class="text-3xl font-bold text-gold-light" id="statChampions">--</div>
+        <div class="text-xs text-gray-300">🏆 top tier</div>
+      </div>
+      <div class="stat-card" style="border-color: #DC2626;">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">At Risk</div>
+        <div class="text-3xl font-bold text-red-300" id="statAtRisk">--</div>
+        <div class="text-xs text-gray-300">🚨 needs action</div>
+      </div>
+      <div class="stat-card" style="border-color: #16A34A;">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">12-mo CLV</div>
+        <div class="text-2xl font-bold text-green-300" id="statCLV">--</div>
+        <div class="text-xs text-gray-300">projected</div>
+      </div>
+    </section>
+
+    <!-- View Tabs -->
+    <div class="border-b border-gray-200 mb-6 flex items-center">
+      <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+      <button class="tab-btn" data-tab="segments">🎯 Segments</button>
+      <button class="tab-btn" data-tab="customers">👥 Customers</button>
+      <button class="tab-btn" data-tab="heatmap">🔥 RFM Heatmap</button>
+    </div>
+
+    <!-- Tab: Overview -->
+    <section id="tab-overview" class="tab-content">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <h2 class="font-georgia text-lg font-bold mb-4 text-navy">Revenue by Segment</h2>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <h2 class="font-georgia text-lg font-bold mb-4 text-navy">Segment Size Distribution</h2>
+          <div class="chart-container">
+            <canvas id="sizeChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
+        <h2 class="font-georgia text-lg font-bold mb-4 text-navy">CLV vs Churn Risk Matrix</h2>
+        <div class="chart-container" style="height: 320px;">
+          <canvas id="matrixChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Segments -->
+    <section id="tab-segments" class="tab-content hidden">
+      <div id="segmentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="loading-shimmer h-48"></div>
+        <div class="loading-shimmer h-48"></div>
+        <div class="loading-shimmer h-48"></div>
+      </div>
+    </section>
+
+    <!-- Tab: Customers -->
+    <section id="tab-customers" class="tab-content hidden">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4 flex items-center gap-4 flex-wrap">
+        <input id="customerSearch" class="search-input" type="text" placeholder="Search customers..." />
+        <select id="segmentFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option value="">All segments</option>
+        </select>
+        <select id="sortBy" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+          <option value="clv_12m">Sort by CLV (high to low)</option>
+          <option value="churn_probability">Sort by Churn Risk (high to low)</option>
+          <option value="recency_days">Sort by Recency (recent first)</option>
+          <option value="monetary">Sort by Total Spend</option>
+        </select>
+        <div class="ml-auto text-sm text-gray-500">
+          Showing <span id="customerCount" class="font-semibold text-navy">0</span> customers
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="customer-row header">
+          <div>ID</div>
+          <div>Name</div>
+          <div>Segment</div>
+          <div>RFM</div>
+          <div>CLV (12m)</div>
+          <div>Churn Risk</div>
+          <div>Action</div>
+        </div>
+        <div id="customersList" class="max-h-[600px] overflow-y-auto">
+          <div class="loading-shimmer h-12 m-4"></div>
+          <div class="loading-shimmer h-12 m-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab: Heatmap -->
+    <section id="tab-heatmap" class="tab-content hidden">
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="font-georgia text-lg font-bold mb-2 text-navy">RFM Heatmap (Recency × Frequency)</h2>
+        <p class="text-sm text-gray-500 mb-4">Customer count by R (recency) and F (frequency) scores. Hover to see details.</p>
+        <div id="heatmapContainer" class="grid gap-1" style="grid-template-columns: 80px repeat(5, 1fr);">
+          <!-- Filled by JS -->
+        </div>
+        <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div><strong class="text-navy">Recency (R):</strong> <span class="text-gray-600">days since last purchase (5 = most recent)</span></div>
+          <div><strong class="text-navy">Frequency (F):</strong> <span class="text-gray-600">orders per month (5 = highest)</span></div>
+          <div><strong class="text-navy">Monetary (M):</strong> <span class="text-gray-600">avg monthly spend (5 = highest)</span></div>
+          <div><strong class="text-navy">RFM Score:</strong> <span class="text-gray-600">3-digit code (e.g. 555 = best)</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Segment Detail Modal -->
+  <div id="segmentModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="p-6 border-b border-gray-200 flex items-start justify-between" id="modalHeader">
+        <!-- Filled by JS -->
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Segment Metrics</h3>
+            <div class="space-y-3" id="modalMetrics"></div>
+          </div>
+          <div>
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Recommended Actions</h3>
+            <ul class="space-y-2" id="modalRecommendations"></ul>
+          </div>
+        </div>
+        <div class="mb-6">
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Key Characteristics</h3>
+          <ul class="space-y-1" id="modalCharacteristics"></ul>
+        </div>
+        <div>
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Top Customers in this Segment</h3>
+          <div class="bg-gray-50 rounded-lg overflow-hidden" id="modalCustomers">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { segmentationAPI } from '/js/segmentation/api.js';
+
+    // State
+    let allSegments = [];
+    let allCustomers = [];
+    let summary = {};
+    let revenueChart = null, sizeChart = null, matrixChart = null;
+    let currentTab = 'overview';
+    let searchTerm = '';
+    let segmentFilter = '';
+    let sortBy = 'clv_12m';
+
+    // ==================================================
+    // INITIALIZATION
+    // ==================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAll();
+      setupListeners();
+    });
+
+    function setupListeners() {
+      document.getElementById('refreshBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('refreshBtn');
+        const icon = document.getElementById('refreshIcon');
+        btn.disabled = true;
+        icon.classList.add('animate-spin');
+        try {
+          await segmentationAPI.refresh();
+          await loadAll();
+        } catch (e) {
+          console.error(e);
+        }
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      });
+
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentTab = btn.dataset.tab;
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          document.getElementById(`tab-${currentTab}`).classList.remove('hidden');
+          if (currentTab === 'overview') renderCharts();
+          if (currentTab === 'segments') renderSegments();
+          if (currentTab === 'customers') renderCustomers();
+          if (currentTab === 'heatmap') renderHeatmap();
+        });
+      });
+
+      // Customer filters
+      document.getElementById('customerSearch').addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderCustomers();
+      });
+      document.getElementById('segmentFilter').addEventListener('change', (e) => {
+        segmentFilter = e.target.value;
+        renderCustomers();
+      });
+      document.getElementById('sortBy').addEventListener('change', (e) => {
+        sortBy = e.target.value;
+        renderCustomers();
+      });
+
+      // Modal
+      document.getElementById('segmentModal').addEventListener('click', (e) => {
+        if (e.target.id === 'segmentModal') closeModal();
+      });
+    }
+
+    // ==================================================
+    // DATA LOADING
+    // ==================================================
+    async function loadAll() {
+      try {
+        const [segRes, dashRes] = await Promise.all([
+          segmentationAPI.getAllSegments(),
+          segmentationAPI.getDashboard(),
+        ]);
+        allSegments = segRes.segments;
+        allCustomers = dashRes.segmentation.total_customers
+          ? (await segmentationAPI.getCustomers({ limit: 500 })).customers
+          : [];
+        summary = segRes.summary;
+        renderStats(dashRes);
+        renderSegments();
+        renderCharts();
+        populateSegmentFilter();
+        renderCustomers();
+        renderHeatmap();
+        updateTimestamp();
+      } catch (err) {
+        console.error('Failed to load segmentation:', err);
+      }
+    }
+
+    function updateTimestamp() {
+      document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+    }
+
+    // ==================================================
+    // RENDERING
+    // ==================================================
+    function renderStats(dashRes) {
+      document.getElementById('statTotal').textContent = dashRes.segmentation.total_customers.toLocaleString('id-ID');
+      document.getElementById('statRevenue').textContent = formatCurrency(dashRes.segmentation.total_revenue);
+      document.getElementById('statChampions').textContent = dashRes.segmentation.champions;
+      document.getElementById('statAtRisk').textContent = dashRes.segmentation.at_risk;
+      document.getElementById('statCLV').textContent = formatCurrency(dashRes.segmentation.total_predicted_clv_12m);
+    }
+
+    function renderSegments() {
+      const grid = document.getElementById('segmentsGrid');
+      grid.innerHTML = allSegments.map(s => {
+        const colorBg = hexToRgba(s.color, 0.1);
+        return `
+          <div class="segment-card" data-segment="${s.name}" style="--seg-color: ${s.color}; --seg-color-bg: ${colorBg};">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <div class="segment-icon" style="--seg-color-bg: ${colorBg};">${s.icon}</div>
+                <div>
+                  <h3 class="font-bold text-navy text-lg">${s.name}</h3>
+                  <p class="text-xs text-gray-500">${s.customer_count} customers (${s.percentage}%)</p>
+                </div>
+              </div>
+              <span class="risk-badge risk-${s.churn_risk}">${s.churn_risk}</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3 line-clamp-2">${s.description}</p>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <div class="text-gray-500 uppercase">Revenue</div>
+                <div class="font-bold text-navy">${formatCurrency(s.total_revenue)}</div>
+              </div>
+              <div>
+                <div class="text-gray-500 uppercase">Avg CLV</div>
+                <div class="font-bold text-navy">${formatCurrency(s.avg_clv)}</div>
+              </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+              Click for details →
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      grid.querySelectorAll('.segment-card').forEach(card => {
+        card.addEventListener('click', () => openSegmentModal(card.dataset.segment));
+      });
+    }
+
+    function renderCharts() {
+      // Revenue chart (bar)
+      const ctx1 = document.getElementById('revenueChart').getContext('2d');
+      if (revenueChart) revenueChart.destroy();
+      const segNames = allSegments.map(s => s.name);
+      const revenues = allSegments.map(s => s.total_revenue);
+      const colors = allSegments.map(s => s.color);
+      revenueChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: segNames,
+          datasets: [{
+            label: 'Revenue (IDR)',
+            data: revenues,
+            backgroundColor: colors.map(c => c + 'CC'),
+            borderColor: colors,
+            borderWidth: 2,
+            borderRadius: 6,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (ctx) => formatCurrency(ctx.parsed.x) } },
+          },
+          scales: {
+            x: {
+              ticks: { callback: (v) => formatCurrencyShort(v) },
+              grid: { color: '#F3F4F6' },
+            },
+            y: { grid: { display: false } },
+          },
+        },
+      });
+
+      // Size chart (doughnut)
+      const ctx2 = document.getElementById('sizeChart').getContext('2d');
+      if (sizeChart) sizeChart.destroy();
+      sizeChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: segNames,
+          datasets: [{
+            data: allSegments.map(s => s.customer_count),
+            backgroundColor: colors,
+            borderColor: '#fff',
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } },
+          },
+        },
+      });
+
+      // Matrix chart (scatter: CLV vs Churn, sized by customer count)
+      const ctx3 = document.getElementById('matrixChart').getContext('2d');
+      if (matrixChart) matrixChart.destroy();
+      const matrixData = allSegments.map((s, i) => ({
+        x: (s.avg_clv || 0) / 1e6,
+        y: 0,  // We'll compute avg churn from the customers
+        r: Math.max(8, Math.sqrt(s.customer_count) * 2),
+        label: s.name,
+        color: s.color,
+      }));
+      // Calculate avg churn from customers per segment
+      const churnBySeg = {};
+      for (const c of allCustomers) {
+        if (!churnBySeg[c.segment]) churnBySeg[c.segment] = [];
+        churnBySeg[c.segment].push(c.churn_probability);
+      }
+      for (const d of matrixData) {
+        const arr = churnBySeg[d.label] || [];
+        d.y = arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length) * 100 : 0;
+      }
+      matrixChart = new Chart(ctx3, {
+        type: 'bubble',
+        data: {
+          datasets: [{
+            label: 'Segments',
+            data: matrixData,
+            backgroundColor: matrixData.map(d => d.color + '99'),
+            borderColor: matrixData.map(d => d.color),
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const d = ctx.raw;
+                  return `${d.label}: CLV Rp${d.x.toFixed(1)}M, Churn ${d.y.toFixed(0)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Avg CLV (Million IDR)' },
+              grid: { color: '#F3F4F6' },
+            },
+            y: {
+              title: { display: true, text: 'Avg Churn Risk (%)' },
+              min: 0, max: 100,
+              grid: { color: '#F3F4F6' },
+            },
+          },
+        },
+      });
+    }
+
+    function renderCustomers() {
+      let filtered = [...allCustomers];
+      if (searchTerm) {
+        filtered = filtered.filter(c =>
+          c.customer_name.toLowerCase().includes(searchTerm) ||
+          c.customer_id.toLowerCase().includes(searchTerm)
+        );
+      }
+      if (segmentFilter) {
+        filtered = filtered.filter(c => c.segment === segmentFilter);
+      }
+      // Sort
+      filtered.sort((a, b) => {
+        const av = sortField(a, sortBy);
+        const bv = sortField(b, sortBy);
+        if (sortBy === 'recency_days') return av - bv;
+        return bv - av;
+      });
+
+      const maxCLV = Math.max(...allCustomers.map(c => c.clv_12m || 1));
+      document.getElementById('customerCount').textContent = filtered.length;
+      const list = document.getElementById('customersList');
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="p-12 text-center text-gray-500">No customers match your filters.</div>';
+        return;
+      }
+      list.innerHTML = filtered.slice(0, 100).map(c => {
+        const clvPct = ((c.clv_12m / maxCLV) * 100).toFixed(0);
+        const churn = (c.churn_probability * 100).toFixed(0);
+        const churnColor = c.churn_probability < 0.2 ? 'text-green-600' :
+                           c.churn_probability < 0.45 ? 'text-yellow-600' :
+                           c.churn_probability < 0.7 ? 'text-orange-600' : 'text-red-600';
+        return `
+          <div class="customer-row">
+            <div class="font-mono text-xs text-gray-500">${c.customer_id}</div>
+            <div>
+              <div class="font-semibold text-navy">${c.customer_name}</div>
+              <div class="text-xs text-gray-500">${c.frequency} orders · Rp${(c.monetary/1e6).toFixed(1)}M spent</div>
+            </div>
+            <div class="text-xs font-semibold text-navy">${c.segment}</div>
+            <div><span class="rfm-badge">${c.rfm_score}</span></div>
+            <div>
+              <div class="text-sm font-semibold text-navy">Rp${(c.clv_12m/1e6).toFixed(1)}M</div>
+              <div class="clv-bar"><div class="clv-bar-fill" style="width: ${clvPct}%;"></div></div>
+            </div>
+            <div class="${churnColor} font-semibold text-sm">${churn}%</div>
+            <div>
+              <button class="text-xs text-gold-dark hover:underline" title="${c.next_best_action}">View</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderHeatmap() {
+      // Build RFM heatmap (R x F with M as size or color)
+      const rfmGrid = {};
+      for (const c of allCustomers) {
+        const [r, f, m] = c.rfm_score.split('').map(Number);
+        const key = `${r}-${f}`;
+        if (!rfmGrid[key]) rfmGrid[key] = { r, f, count: 0, totalM: 0, segments: {} };
+        rfmGrid[key].count++;
+        rfmGrid[key].totalM += m;
+        rfmGrid[key].segments[c.segment] = (rfmGrid[key].segments[c.segment] || 0) + 1;
+      }
+      const maxCount = Math.max(...Object.values(rfmGrid).map(g => g.count), 1);
+
+      const container = document.getElementById('heatmapContainer');
+      let html = '<div></div>'; // top-left empty
+      // Header row (F = 1..5)
+      for (let f = 1; f <= 5; f++) {
+        html += `<div class="text-center text-xs font-semibold text-gray-500 py-1">F=${f}</div>`;
+      }
+      // Data rows (R = 5..1, top to bottom)
+      for (let r = 5; r >= 1; r--) {
+        html += `<div class="text-center text-xs font-semibold text-gray-500 py-2">R=${r}</div>`;
+        for (let f = 1; f <= 5; f++) {
+          const cell = rfmGrid[`${r}-${f}`];
+          if (cell) {
+            const intensity = cell.count / maxCount;
+            const bg = `rgba(212, 175, 55, ${0.15 + intensity * 0.85})`;
+            const textColor = intensity > 0.5 ? 'white' : 'var(--navy)';
+            const topSeg = Object.entries(cell.segments).sort((a, b) => b[1] - a[1])[0];
+            html += `
+              <div class="heatmap-cell" style="background: ${bg}; color: ${textColor};"
+                   title="R=${r} F=${f}: ${cell.count} customers, top segment: ${topSeg[0]}">
+                ${cell.count}
+              </div>
+            `;
+          } else {
+            html += `<div class="heatmap-cell bg-gray-50 text-gray-300">-</div>`;
+          }
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    function populateSegmentFilter() {
+      const sel = document.getElementById('segmentFilter');
+      const current = sel.value;
+      sel.innerHTML = '<option value="">All segments</option>' +
+        allSegments.map(s => `<option value="${s.name}">${s.icon} ${s.name}</option>`).join('');
+      sel.value = current;
+    }
+
+    // ==================================================
+    // SEGMENT MODAL
+    // ==================================================
+    async function openSegmentModal(segmentName) {
+      try {
+        const detail = await segmentationAPI.getSegment(segmentName);
+        const customers = await segmentationAPI.getSegmentCustomers(segmentName, 10);
+
+        const header = document.getElementById('modalHeader');
+        header.innerHTML = `
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="text-4xl">${detail.icon}</span>
+              <div>
+                <h2 class="font-georgia text-2xl font-bold text-navy">${detail.name}</h2>
+                <p class="text-sm text-gray-600">${detail.description}</p>
+              </div>
+            </div>
+          </div>
+          <button onclick="document.getElementById('segmentModal').classList.remove('open')" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+        `;
+
+        document.getElementById('modalMetrics').innerHTML = `
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Customers</span>
+            <span class="font-bold text-navy">${detail.customer_count} (${detail.percentage}%)</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Total Revenue</span>
+            <span class="font-bold text-navy">${formatCurrency(detail.total_revenue)}</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Avg CLV (12m)</span>
+            <span class="font-bold text-navy">${formatCurrency(detail.avg_clv)}</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Avg Recency</span>
+            <span class="font-bold text-navy">${detail.avg_recency.toFixed(0)} days</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Avg Frequency</span>
+            <span class="font-bold text-navy">${detail.avg_frequency.toFixed(2)} orders/mo</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Avg Monthly Spend</span>
+            <span class="font-bold text-navy">${formatCurrency(detail.avg_monetary)}</span>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="text-sm text-gray-600">Churn Risk</span>
+            <span class="risk-badge risk-${detail.churn_risk}">${detail.churn_risk}</span>
+          </div>
+        `;
+
+        document.getElementById('modalRecommendations').innerHTML = detail.recommendations.map(r => `
+          <li class="flex items-start gap-2 text-sm text-gray-700 p-2 bg-yellow-50 rounded">
+            <span class="text-gold mt-0.5">▸</span>
+            <span>${r}</span>
+          </li>
+        `).join('');
+
+        document.getElementById('modalCharacteristics').innerHTML = detail.characteristics.map(c => `
+          <li class="flex items-center gap-2 text-sm text-gray-700">
+            <span class="w-2 h-2 bg-gold rounded-full"></span>
+            <span>${c}</span>
+          </li>
+        `).join('');
+
+        const custList = customers.customers.slice(0, 5).map(c => `
+          <div class="grid grid-cols-12 gap-2 p-3 border-b border-gray-200 text-sm">
+            <div class="col-span-2 font-mono text-xs text-gray-500">${c.customer_id}</div>
+            <div class="col-span-3 font-semibold text-navy">${c.customer_name}</div>
+            <div class="col-span-2"><span class="rfm-badge">${c.rfm_score}</span></div>
+            <div class="col-span-2 font-mono">Rp${(c.clv_12m/1e6).toFixed(1)}M</div>
+            <div class="col-span-3 text-xs text-gray-600 italic">${c.next_best_action.substring(0, 50)}...</div>
+          </div>
+        `).join('');
+        document.getElementById('modalCustomers').innerHTML = custList || '<div class="p-4 text-center text-gray-500">No customers in this segment</div>';
+
+        document.getElementById('segmentModal').classList.add('open');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('segmentModal').classList.remove('open');
+    }
+
+    // ==================================================
+    // UTILITIES
+    // ==================================================
+    function formatCurrency(n) {
+      if (!n) return 'Rp 0';
+      if (n >= 1e9) return `Rp ${(n/1e9).toFixed(2)}B`;
+      if (n >= 1e6) return `Rp ${(n/1e6).toFixed(1)}M`;
+      if (n >= 1e3) return `Rp ${(n/1e3).toFixed(0)}K`;
+      return `Rp ${n.toFixed(0)}`;
+    }
+    function formatCurrencyShort(n) {
+      if (n >= 1e9) return `${(n/1e9).toFixed(1)}B`;
+      if (n >= 1e6) return `${(n/1e6).toFixed(0)}M`;
+      if (n >= 1e3) return `${(n/1e3).toFixed(0)}K`;
+      return `${n.toFixed(0)}`;
+    }
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    function sortField(c, key) {
+      if (key === 'clv_12m') return c.clv_12m;
+      if (key === 'churn_probability') return c.churn_probability;
+      if (key === 'recency_days') return c.recency_days;
+      if (key === 'monetary') return c.monetary;
+      return 0;
+    }
+  </script>
+</body>
+</html>

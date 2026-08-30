@@ -1,0 +1,48 @@
+{
+  "name": "customer360",
+  "version": "1.0.0",
+  "description": "Customer 360 - Single customer view with analytics",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@element-plus/nuxt": "^1.1.5",
+    "@nuxtjs/i18n": "^10.6.0",
+    "@pinia/nuxt": "^0.5.5",
+    "@vueuse/core": "^10.9.0",
+    "@vueuse/nuxt": "^10.11.1",
+    "axios": "^1.6.4",
+    "dayjs": "^1.11.10",
+    "echarts": "^5.5.0",
+    "element-plus": "^2.5.1",
+    "nuxt": "^3.11.2",
+    "pinia": "^2.1.7",
+    "vite": "^8.2.2",
+    "vue": "^3.4.21",
+    "vue-echarts": "^7.0.3",
+    "vue-i18n": "^9.9.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.2",
+    "@types/node": "^20.11.20",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/test-utils": "^2.4.4",
+    "happy-dom": "^13.10.1",
+    "sass": "^1.71.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.2",
+    "vue-tsc": "^1.8.27"
+  }
+}

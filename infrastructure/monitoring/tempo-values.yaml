@@ -1,0 +1,59 @@
+# Tempo for distributed tracing
+# Deploy with: helm install tempo grafana/tempo -f values.yaml
+
+tempo:
+  enabled: true
+  image:
+    tag: 2.3.1
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    size: 100Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: mdm-tempo
+        endpoint: s3.amazonaws.com
+      wal:
+        path: /var/tempo/wal
+  config:
+    compactor:
+      compaction:
+        block_retention: 720h  # 30 days
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: "0.0.0.0:4317"
+            http:
+              endpoint: "0.0.0.0:4318"
+    ingester:
+      max_block_duration: 5m
+      trace_idle_period: 10s
+    querier:
+      frontend_worker:
+        frontend_address: tempo-ingester:9095
+    ingester_client:
+      max_connections_per_addr: 100
+
+service:
+  type: ClusterIP
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+    - name: tempo
+      port: 3100
+      targetPort: 3100

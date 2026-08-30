@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Backup & Restore - MDM Admin</title>
+    <link rel="stylesheet" href="../../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="backupPage()" x-init="init()">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Backup & Restore</h1>
+        <p class="text-sm text-gray-500">Schedule, manage, and restore database backups</p>
+      </div>
+      <button @click="createBackup()" class="btn btn-primary">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Create Backup Now
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div class="card-stat">
+        <p class="stat-label">Last Full Backup</p>
+        <p class="text-lg font-bold" x-text="lastFullBackup"></p>
+        <p class="text-xs text-success" x-text="lastFullBackupStatus"></p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Last Incremental</p>
+        <p class="text-lg font-bold" x-text="lastIncremental"></p>
+        <p class="text-xs text-success">SUCCESS</p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Storage Used</p>
+        <p class="text-lg font-bold" x-text="storageUsed"></p>
+        <p class="text-xs text-gray-500" x-text="'of ' + storageQuota"></p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">RPO Target</p>
+        <p class="text-lg font-bold">&lt; 15 min</p>
+        <p class="text-xs text-success">✓ Met</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed mb-6 bg-base-100 shadow-md">
+      <a class="tab" :class="activeTab === 'backups' ? 'tab-active' : ''" @click="activeTab = 'backups'">Backup History</a>
+      <a class="tab" :class="activeTab === 'schedules' ? 'tab-active' : ''" @click="activeTab = 'schedules'">Schedules</a>
+      <a class="tab" :class="activeTab === 'restore' ? 'tab-active' : ''" @click="activeTab = 'restore'">Restore</a>
+      <a class="tab" :class="activeTab === 'policies' ? 'tab-active' : ''" @click="activeTab = 'policies'">Retention Policy</a>
+    </div>
+
+    <!-- Backups Tab -->
+    <div x-show="activeTab === 'backups'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Backup ID</th>
+                <th>Type</th>
+                <th>Database</th>
+                <th>Size</th>
+                <th>Started</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="backup in backups" :key="backup.id">
+                <tr>
+                  <td class="font-mono text-xs" x-text="backup.id"></td>
+                  <td>
+                    <span class="badge badge-sm" :class="backup.type === 'FULL' ? 'badge-primary' : 'badge-info'" x-text="backup.type"></span>
+                  </td>
+                  <td class="font-mono text-xs" x-text="backup.database"></td>
+                  <td x-text="backup.size"></td>
+                  <td class="text-xs" x-text="backup.startedAt"></td>
+                  <td x-text="backup.duration"></td>
+                  <td>
+                    <span class="badge badge-sm" :class="backup.status === 'SUCCESS' ? 'badge-success' : 'badge-error'" x-text="backup.status"></span>
+                  </td>
+                  <td>
+                    <button @click="downloadBackup(backup)" class="btn btn-xs btn-ghost">Download</button>
+                    <button @click="restoreBackup(backup)" class="btn btn-xs btn-primary">Restore</button>
+                    <button @click="deleteBackup(backup)" class="btn btn-xs btn-error">Delete</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedules Tab -->
+    <div x-show="activeTab === 'schedules'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base mb-4">Backup Schedules</h3>
+        <div class="space-y-3">
+          <template x-for="sched in schedules" :key="sched.id">
+            <div class="rounded-md border border-base-300 p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h4 class="font-semibold" x-text="sched.name"></h4>
+                  <p class="text-xs text-gray-500" x-text="sched.description"></p>
+                </div>
+                <label class="cursor-pointer">
+                  <input type="checkbox" class="toggle toggle-primary" :checked="sched.enabled" @change="toggleSchedule(sched)" />
+                </label>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-sm md:grid-cols-4">
+                <div><span class="text-gray-500">Type:</span> <span class="font-mono" x-text="sched.type"></span></div>
+                <div><span class="text-gray-500">Cron:</span> <span class="font-mono" x-text="sched.cron"></span></div>
+                <div><span class="text-gray-500">Retention:</span> <span x-text="sched.retention"></span></div>
+                <div><span class="text-gray-500">Last run:</span> <span x-text="sched.lastRun"></span></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restore Tab -->
+    <div x-show="activeTab === 'restore'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Point-in-Time Recovery</h3>
+        <p class="text-sm text-gray-500 mb-4">Restore database to a specific point in time</p>
+
+        <div class="alert alert-warning mb-4">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <h4 class="font-semibold">⚠️ Restore akan overwrite data</h4>
+            <p class="text-sm">Tindakan ini akan me-replace data saat ini dengan backup. Pastikan untuk backup dulu sebelum restore.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="form-control">
+            <label class="form-label">Target Database</label>
+            <select class="form-input" x-model="restoreForm.database">
+              <option value="">Select database</option>
+              <option value="mdm_customer">mdm_customer (CIF)</option>
+              <option value="mdm_auth">mdm_auth</option>
+              <option value="mdm_audit">mdm_audit</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="form-label">Restore Type</label>
+            <select class="form-input" x-model="restoreForm.type">
+              <option value="PIT">Point-in-Time</option>
+              <option value="FULL">Full Backup</option>
+              <option value="INCREMENTAL">Incremental</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="form-label">Timestamp</label>
+            <input type="datetime-local" class="form-input" x-model="restoreForm.timestamp" />
+          </div>
+          <div class="form-control">
+            <label class="form-label">Approver Username</label>
+            <input type="text" class="form-input" x-model="restoreForm.approver" placeholder="2nd approver (4-eyes)" />
+          </div>
+          <div class="form-control md:col-span-2">
+            <label class="form-label">Reason</label>
+            <textarea class="form-input h-24" x-model="restoreForm.reason" placeholder="Jelaskan alasan restore..."></textarea>
+          </div>
+        </div>
+
+        <div class="card-actions justify-end mt-4">
+          <button class="btn btn-ghost">Cancel</button>
+          <button @click="confirmRestore()" class="btn btn-error" :disabled="!canRestore()">⚠️ Restore (4-eyes required)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Retention Policy Tab -->
+    <div x-show="activeTab === 'policies'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Retention Policy</h3>
+        <div class="space-y-4">
+          <div class="form-control">
+            <label class="form-label">Full Backup Retention (days)</label>
+            <input type="number" class="form-input" x-model.number="policy.fullRetention" />
+            <p class="text-xs text-gray-500">Compliance (UU PDP) requires minimum 10 years for PII data</p>
+          </div>
+          <div class="form-control">
+            <label class="form-label">Incremental Backup Retention (days)</label>
+            <input type="number" class="form-input" x-model.number="policy.incrementalRetention" />
+          </div>
+          <div class="form-control">
+            <label class="form-label">Archive to Glacier after (days)</label>
+            <input type="number" class="form-input" x-model.number="policy.glacierDays" />
+          </div>
+          <div class="form-control">
+            <label class="form-label">Cross-region Replication</label>
+            <select class="form-input" x-model="policy.crossRegion">
+              <option value="disabled">Disabled</option>
+              <option value="singapore">Singapore (ap-southeast-1)</option>
+              <option value="sydney">Sydney (ap-southeast-2)</option>
+            </select>
+          </div>
+          <div class="form-control">
+            <label class="form-label cursor-pointer flex items-center gap-2">
+              <input type="checkbox" class="checkbox checkbox-primary" x-model="policy.encrypted" />
+              <span>Encrypt backups (AES-256)</span>
+            </label>
+          </div>
+        </div>
+        <div class="card-actions justify-end mt-4">
+          <button @click="savePolicy()" class="btn btn-primary">Save Policy</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function backupPage() {
+        return {
+          activeTab: 'backups',
+          lastFullBackup: '2026-08-26 03:00 WIB',
+          lastFullBackupStatus: '✓ SUCCESS',
+          lastIncremental: '2026-08-26 06:00 WIB',
+          storageUsed: '2.4 TB',
+          storageQuota: '10 TB',
+          backups: [
+            { id: 'BKP-2026-08-26-03', type: 'FULL', database: 'mdm_customer', size: '1.2 TB', startedAt: '2026-08-26 03:00', duration: '47 min', status: 'SUCCESS' },
+            { id: 'BKP-2026-08-26-06', type: 'INCREMENTAL', database: 'mdm_customer', size: '34 GB', startedAt: '2026-08-26 06:00', duration: '8 min', status: 'SUCCESS' },
+            { id: 'BKP-2026-08-25-03', type: 'FULL', database: 'mdm_customer', size: '1.2 TB', startedAt: '2026-08-25 03:00', duration: '45 min', status: 'SUCCESS' },
+            { id: 'BKP-2026-08-24-03', type: 'FULL', database: 'mdm_customer', size: '1.1 TB', startedAt: '2026-08-24 03:00', duration: '43 min', status: 'SUCCESS' },
+            { id: 'BKP-2026-08-23-03', type: 'FULL', database: 'mdm_customer', size: '1.1 TB', startedAt: '2026-08-23 03:00', duration: '0:42', status: 'SUCCESS' },
+            { id: 'BKP-2026-08-22-03', type: 'FULL', database: 'mdm_customer', size: '1.0 TB', startedAt: '2026-08-22 03:00', duration: '40 min', status: 'FAILED' },
+            { id: 'BKP-2026-08-21-03', type: 'FULL', database: 'mdm_customer', size: '1.0 TB', startedAt: '2026-08-21 03:00', duration: '38 min', status: 'SUCCESS' },
+          ],
+          schedules: [
+            { id: 1, name: 'Daily Full Backup', description: 'Full backup semua database setiap hari jam 3 pagi', type: 'FULL', cron: '0 0 3 * * ?', retention: '30 days', enabled: true, lastRun: '2026-08-26 03:00' },
+            { id: 2, name: 'Hourly Incremental', description: 'Incremental backup setiap 3 jam', type: 'INCREMENTAL', cron: '0 0 0/3 * * ?', retention: '7 days', enabled: true, lastRun: '2026-08-26 06:00' },
+            { id: 3, name: 'Weekly Archive', description: 'Archive ke S3 Glacier setiap Minggu', type: 'ARCHIVE', cron: '0 0 2 ? * SUN', retention: '365 days', enabled: true, lastRun: '2026-08-25 02:00' },
+            { id: 4, name: 'Pre-Deploy Snapshot', description: 'Snapshot sebelum deploy (triggered)', type: 'SNAPSHOT', cron: 'manual', retention: '14 days', enabled: true, lastRun: '2026-08-20 14:00' },
+          ],
+          restoreForm: { database: '', type: 'PIT', timestamp: '', approver: '', reason: '' },
+          policy: {
+            fullRetention: 3650, // 10 years for UU PDP
+            incrementalRetention: 30,
+            glacierDays: 90,
+            crossRegion: 'singapore',
+            encrypted: true,
+          },
+
+          async init() {},
+
+          async createBackup() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Creating full backup...', type: 'info' } }));
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Backup created: BKP-2026-08-26-12 (32 GB in 4 min)', type: 'success' } }));
+            }, 3000);
+          },
+
+          downloadBackup(backup) {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Generating download link for ${backup.id}...`, type: 'info' } }));
+          },
+
+          restoreBackup(backup) {
+            this.restoreForm.database = backup.database.toLowerCase().includes('customer') ? 'mdm_customer' : 'mdm_auth';
+            this.restoreForm.type = 'FULL';
+            this.activeTab = 'restore';
+          },
+
+          deleteBackup(backup) {
+            if (confirm(`Delete backup ${backup.id}?`)) {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Backup ${backup.id} deleted`, type: 'success' } }));
+            }
+          },
+
+          toggleSchedule(sched) {
+            sched.enabled = !sched.enabled;
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Schedule ${sched.enabled ? 'enabled' : 'disabled'}`, type: 'success' } }));
+          },
+
+          canRestore() {
+            return this.restoreForm.database && this.restoreForm.timestamp && this.restoreForm.approver && this.restoreForm.reason.length > 10;
+          },
+
+          confirmRestore() {
+            if (!confirm('⚠️ RESTORE WILL OVERWRITE CURRENT DATA!\n\nAre you absolutely sure?')) return;
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Restore initiated. This may take 30+ minutes.', type: 'warning' } }));
+          },
+
+          savePolicy() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Retention policy saved', type: 'success' } }));
+          },
+        };
+      }
+
+      window.backupPage = backupPage;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports - MDM Admin</title>
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="reportsPage()" x-init="init()">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Reports & Analytics</h1>
+        <p class="text-sm text-gray-500">Executive reports, compliance reports, audit reports</p>
+      </div>
+      <button class="btn btn-primary" @click="openBuilder()">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        New Report
+      </button>
+    </div>
+
+    <!-- Report Categories -->
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div class="card-stat cursor-pointer" @click="filterCategory('executive')">
+        <h3 class="font-semibold">Executive</h3>
+        <p class="text-2xl font-bold text-primary" x-text="counts.executive"></p>
+        <p class="text-xs text-gray-500">reports</p>
+      </div>
+      <div class="card-stat cursor-pointer" @click="filterCategory('compliance')">
+        <h3 class="font-semibold">Compliance</h3>
+        <p class="text-2xl font-bold text-primary" x-text="counts.compliance"></p>
+        <p class="text-xs text-gray-500">reports</p>
+      </div>
+      <div class="card-stat cursor-pointer" @click="filterCategory('operational')">
+        <h3 class="font-semibold">Operational</h3>
+        <p class="text-2xl font-bold text-primary" x-text="counts.operational"></p>
+        <p class="text-xs text-gray-500">reports</p>
+      </div>
+      <div class="card-stat cursor-pointer" @click="filterCategory('audit')">
+        <h3 class="font-semibold">Audit</h3>
+        <p class="text-2xl font-bold text-primary" x-text="counts.audit"></p>
+        <p class="text-xs text-gray-500">reports</p>
+      </div>
+    </div>
+
+    <!-- Reports List -->
+    <div class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="card-title text-base">Report Library</h3>
+          <div class="flex items-center gap-2">
+            <input type="text" placeholder="Search reports..." class="form-input" x-model="search" @input="filter()" />
+            <select class="form-input" x-model="category" @change="filter()">
+              <option value="">All Categories</option>
+              <option value="executive">Executive</option>
+              <option value="compliance">Compliance</option>
+              <option value="operational">Operational</option>
+              <option value="audit">Audit</option>
+            </select>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Format</th>
+                <th>Last Run</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="report in filteredReports" :key="report.code">
+                <tr>
+                  <td class="font-mono text-xs" x-text="report.code"></td>
+                  <td x-text="report.name"></td>
+                  <td><span class="badge badge-sm" x-text="report.category"></span></td>
+                  <td x-text="report.format"></td>
+                  <td class="text-xs" x-text="report.lastRun"></td>
+                  <td><span class="badge badge-sm badge-success" x-text="report.status"></span></td>
+                  <td>
+                    <button class="btn btn-xs btn-primary" @click="runReport(report)">Run</button>
+                    <button class="btn btn-xs btn-ghost">Schedule</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function reportsPage() {
+        return {
+          search: '',
+          category: '',
+          reports: [
+            { code: 'RPT-CIF-GROWTH', name: 'CIF Growth (Monthly)', category: 'executive', format: 'PDF/Excel', lastRun: '2026-08-01 02:00', status: 'ACTIVE' },
+            { code: 'RPT-DUP-MONTHLY', name: 'Duplicate Trends', category: 'executive', format: 'PDF/Excel', lastRun: '2026-08-01 02:00', status: 'ACTIVE' },
+            { code: 'RPT-DQ-MONTHLY', name: 'Data Quality Score', category: 'executive', format: 'PDF/Excel', lastRun: '2026-08-01 02:00', status: 'ACTIVE' },
+            { code: 'RPT-PPATK-STR', name: 'PPATK STR Report', category: 'compliance', format: 'XML', lastRun: '2026-08-15 18:00', status: 'ACTIVE' },
+            { code: 'RPT-OJK-MONTHLY', name: 'OJK Monthly Report', category: 'compliance', format: 'PDF', lastRun: '2026-08-01 09:00', status: 'ACTIVE' },
+            { code: 'RPT-SLIK', name: 'SLIK (BI) Report', category: 'compliance', format: 'XML', lastRun: '2026-08-15 18:00', status: 'ACTIVE' },
+            { code: 'RPT-UU-PDP', name: 'UU PDP Compliance', category: 'compliance', format: 'PDF', lastRun: '2026-08-01 09:00', status: 'ACTIVE' },
+            { code: 'RPT-CIF-DAILY', name: 'CIF Created Today', category: 'operational', format: 'Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+            { code: 'RPT-KYC-PENDING', name: 'KYC Pending Review', category: 'operational', format: 'Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+            { code: 'RPT-MATCH-QUEUE', name: 'Match Review Queue', category: 'operational', format: 'Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+            { code: 'RPT-AUDIT-USER', name: 'User Activity Audit', category: 'audit', format: 'PDF/Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+            { code: 'RPT-AUDIT-CHANGES', name: 'Data Change History', category: 'audit', format: 'PDF/Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+            { code: 'RPT-AUDIT-LOGIN', name: 'Login Attempts', category: 'audit', format: 'PDF/Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+            { code: 'RPT-AUDIT-EXPORT', name: 'Data Export Audit', category: 'audit', format: 'PDF/Excel', lastRun: '2026-08-26 06:00', status: 'ACTIVE' },
+          ],
+          counts: { executive: 3, compliance: 4, operational: 3, audit: 4 },
+
+          get filteredReports() {
+            return this.reports.filter((r) => {
+              const matchesSearch = !this.search || r.name.toLowerCase().includes(this.search.toLowerCase()) || r.code.toLowerCase().includes(this.search.toLowerCase());
+              const matchesCategory = !this.category || r.category === this.category;
+              return matchesSearch && matchesCategory;
+            });
+          },
+
+          init() {},
+
+          filter() {},
+          filterCategory(cat) { this.category = cat; },
+          openBuilder() { window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Report builder coming soon', type: 'info' } })); },
+          runReport(report) { window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Generating ${report.name}...`, type: 'info' } })); },
+        };
+      }
+
+      window.reportsPage = reportsPage;
+    </script>
+  </body>
+</html>

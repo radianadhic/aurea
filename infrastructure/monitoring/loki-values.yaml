@@ -1,0 +1,60 @@
+# Loki stack for log aggregation
+# Deploy with: helm install loki grafana/loki-stack -f values.yaml
+
+loki:
+  enabled: true
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    size: 100Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  config:
+    limits_config:
+      retention_period: 30d
+      ingestion_rate_mb: 10
+      ingestion_burst_size_mb: 20
+    compactor:
+      working_directory: /data/loki/compactor
+      compaction_interval: 10m
+      retention_enabled: true
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 150
+      delete_request_store: filesystem
+    storage_config:
+      aws:
+        s3: s3://REGION/mdm-loki
+        s3forcepathstyle: true
+      boltdb_shipper:
+        active_index_directory: /data/loki/boltdb-shipper-active
+        cache_location: /data/loki/boltdb-shipper-cache
+        shared_store: s3
+      filesystem:
+        directory: /data/loki/chunks
+
+promtail:
+  enabled: true
+  config:
+    snippets:
+      pipelineStages:
+        - cri: {}
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus:
+  enabled: false  # Use main prometheus from kube-prometheus-stack
+
+grafana:
+  enabled: false  # Use main grafana from kube-prometheus-stack

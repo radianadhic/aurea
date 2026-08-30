@@ -1,0 +1,103 @@
+name: aurea_mobile
+description: "AUREA Mobile - The Gold Standard of Data. Bank XYZ Customer MDM App."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  provider: ^6.1.1
+  riverpod: ^2.4.9
+  flutter_riverpod: ^2.4.9
+
+  # UI / Styling
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  cached_network_image: ^3.3.0
+  shimmer: ^3.0.0
+  lottie: ^2.7.0
+
+  # Navigation
+  go_router: ^13.0.0
+  bottom_navy_bar: ^6.0.1
+
+  # Storage
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+
+  # Network
+  http: ^1.1.2
+  dio: ^5.4.0
+
+  # Utils
+  intl: ^0.19.0
+  uuid: ^4.2.1
+  url_launcher: ^6.2.2
+  share_plus: ^7.2.1
+  qr_flutter: ^4.1.0
+  package_info_plus: ^4.2.0
+
+  # Auth
+  local_auth: ^2.1.7
+  biometric_storage: ^4.1.3
+
+  # Charts
+  fl_chart: ^0.66.0
+  syncfusion_flutter_charts: ^23.2.4
+
+  # Forms
+  form_builder_validators: ^9.0.0
+  flutter_form_builder: ^9.0.0
+
+  # Pull to refresh, etc
+  pull_to_refresh: ^2.0.0
+
+  # Animations
+  flutter_animate: ^4.3.0
+  rive: ^0.13.0
+
+  # WebSocket
+  web_socket_channel: ^2.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  hive_generator: ^2.0.1
+  mockito: ^5.4.2
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/logos/
+    - assets/animations/
+
+  # AUREA fonts
+  fonts:
+    - family: Georgia
+      fonts:
+        - asset: assets/fonts/Georgia-Regular.ttf
+        - asset: assets/fonts/Georgia-Bold.ttf
+          weight: 700
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

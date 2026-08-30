@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUREA — Real-time Fraud Detection</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Georgia&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0A1929;
+      --navy-light: #1A2F47;
+      --gold: #D4AF37;
+      --gold-light: #FFD764;
+      --white: #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-500: #6B7280;
+      --gray-700: #374151;
+    }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--gray-50); color: var(--navy); margin: 0; }
+    .font-georgia { font-family: 'Georgia', serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .gradient-gold {
+      background: linear-gradient(135deg, #D4AF37 0%, #FFD764 100%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: white; border-radius: 12px; padding: 20px; border: 1px solid var(--gold);
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
+      background: var(--gold); opacity: 0.1; border-radius: 50%; transform: translate(20px, -20px);
+    }
+    .stat-card.danger { border-color: #DC2626; }
+    .stat-card.warning { border-color: #F59E0B; }
+    .stat-card.success { border-color: #16A34A; }
+    .stat-card.info { border-color: #0284C7; }
+    .alert-row {
+      display: grid;
+      grid-template-columns: 70px 1fr 100px 110px 110px 100px 80px 60px;
+      gap: 12px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--gray-200);
+      transition: all 0.15s; cursor: pointer;
+    }
+    .alert-row:hover { background: var(--gray-50); transform: translateX(2px); }
+    .alert-row.header {
+      font-weight: 600; color: var(--gray-500); font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.5px; background: var(--gray-50); cursor: default;
+    }
+    .alert-row.header:hover { transform: none; }
+    .priority-badge {
+      display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+      border-radius: 999px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .priority-P1 { background: #FEE2E2; color: #991B1B; animation: pulse-red 2s infinite; }
+    .priority-P2 { background: #FFEDD5; color: #9A3412; }
+    .priority-P3 { background: #FEF3C7; color: #92400E; }
+    .priority-P4 { background: #DBEAFE; color: #1E40AF; }
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+    }
+    .decision-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 600;
+    }
+    .decision-Approved { background: #DCFCE7; color: #166534; }
+    .decision-Manual_Review, .decision-ManualReview { background: #FEF3C7; color: #92400E; }
+    .decision-Blocked { background: #FEE2E2; color: #991B1B; }
+    .risk-meter { width: 100%; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; }
+    .risk-meter-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+    .risk-low { background: #16A34A; }
+    .risk-medium { background: #F59E0B; }
+    .risk-high { background: #EA580C; }
+    .risk-critical { background: #DC2626; }
+    .tab-btn {
+      padding: 10px 20px; border: none; background: transparent; cursor: pointer;
+      font-weight: 500; color: var(--gray-500); border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
+    .tab-btn:hover { color: var(--navy); }
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(10, 25, 41, 0.85); backdrop-filter: blur(4px);
+      z-index: 50; display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: white; border-radius: 16px; max-width: 1100px; width: 100%;
+      max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .refresh-btn {
+      background: var(--navy); color: var(--gold); border: 1px solid var(--gold);
+      padding: 8px 16px; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: var(--gold); color: var(--navy); }
+    .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .action-btn {
+      padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+      transition: all 0.2s; border: 1px solid;
+    }
+    .action-btn-success { background: #16A34A; color: white; border-color: #16A34A; }
+    .action-btn-success:hover { background: #15803D; }
+    .action-btn-danger { background: #DC2626; color: white; border-color: #DC2626; }
+    .action-btn-danger:hover { background: #991B1B; }
+    .action-btn-secondary { background: white; color: var(--navy); border-color: var(--gray-300); }
+    .action-btn-secondary:hover { border-color: var(--navy); }
+    .signal-row {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      background: #FEF2F2; border-radius: 8px; border-left: 3px solid #DC2626;
+    }
+    .filter-chip {
+      padding: 6px 14px; border-radius: 999px; background: white;
+      border: 1px solid var(--gray-300); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    }
+    .filter-chip:hover { border-color: var(--gold); }
+    .filter-chip.active { background: var(--navy); color: var(--gold); border-color: var(--gold); }
+    .chart-container { position: relative; height: 240px; }
+    .loading-shimmer {
+      background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .live-dot {
+      display: inline-block; width: 8px; height: 8px; background: #DC2626;
+      border-radius: 50%; animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="flex items-center gap-2 text-gray-500 hover:text-gray-700">
+          <span>←</span> <span>Back to Console</span>
+        </a>
+        <div class="h-6 w-px bg-gray-300"></div>
+        <h1 class="font-georgia text-2xl font-bold text-navy">
+          🛡️ <span class="gradient-gold">Real-time Fraud</span> Detection
+        </h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 text-xs">
+          <span class="live-dot"></span>
+          <span class="text-gray-500 font-mono">LIVE</span>
+        </div>
+        <span id="lastUpdated" class="text-xs text-gray-500 font-mono"></span>
+        <button id="refreshBtn" class="refresh-btn flex items-center gap-2">
+          <span id="refreshIcon">↻</span>
+          <span>Simulate</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Real-time Stats -->
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div class="stat-card info">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Scanned (24h)</div>
+        <div class="text-3xl font-bold" id="statScanned">--</div>
+        <div class="text-xs text-gray-300">transactions</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Flagged</div>
+        <div class="text-3xl font-bold text-red-300" id="statFlagged">--</div>
+        <div class="text-xs text-gray-300" id="statFraudRate">-- fraud rate</div>
+      </div>
+      <div class="stat-card success">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Approved</div>
+        <div class="text-3xl font-bold text-green-300" id="statApproved">--</div>
+        <div class="text-xs text-gray-300">legit transactions</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Manual Review</div>
+        <div class="text-3xl font-bold text-yellow-300" id="statReview">--</div>
+        <div class="text-xs text-gray-300">pending decision</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="text-xs uppercase tracking-wider text-gray-300 mb-2">Blocked</div>
+        <div class="text-3xl font-bold text-red-300" id="statBlocked">--</div>
+        <div class="text-xs text-gray-300">🚫 auto-rejected</div>
+      </div>
+    </section>
+
+    <!-- Amount at risk -->
+    <div class="bg-white rounded-xl p-4 border border-gray-200 mb-6 flex items-center justify-between">
+      <div>
+        <div class="text-xs text-gray-500 uppercase">Total Amount at Risk</div>
+        <div class="text-2xl font-bold text-red-600" id="statAtRisk">--</div>
+      </div>
+      <div class="text-right">
+        <div class="text-xs text-gray-500 uppercase">Amount Protected (Blocked)</div>
+        <div class="text-2xl font-bold text-green-600" id="statProtected">--</div>
+      </div>
+      <div class="text-right">
+        <div class="text-xs text-gray-500 uppercase">Active Cases</div>
+        <div class="text-2xl font-bold text-navy" id="statCases">--</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-gray-200 mb-6 flex items-center">
+      <button class="tab-btn active" data-tab="alerts">🚨 Alerts <span id="alertCount" class="text-xs ml-1"></span></button>
+      <button class="tab-btn" data-tab="cases">📁 Cases</button>
+      <button class="tab-btn" data-tab="analytics">📊 Analytics</button>
+    </div>
+
+    <!-- TAB: ALERTS -->
+    <section id="tab-alerts" class="tab-content">
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="text-sm font-semibold text-gray-700 mr-2">Decision:</span>
+        <button class="filter-chip active" data-decision="ALL">All</button>
+        <button class="filter-chip" data-decision="Blocked">🔴 Blocked</button>
+        <button class="filter-chip" data-decision="Manual Review">🟡 Review</button>
+        <button class="filter-chip" data-decision="Approved">🟢 Approved</button>
+        <span class="text-sm font-semibold text-gray-700 ml-4 mr-2">Priority:</span>
+        <button class="filter-chip active" data-priority="ALL">All</button>
+        <button class="filter-chip" data-priority="P1">P1</button>
+        <button class="filter-chip" data-priority="P2">P2</button>
+        <button class="filter-chip" data-priority="P3">P3</button>
+        <button class="filter-chip" data-priority="P4">P4</button>
+        <span class="ml-auto text-sm text-gray-500">
+          Showing <span id="filteredCount" class="font-semibold text-navy">0</span> alerts
+        </span>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="alert-row header">
+          <div>Risk</div>
+          <div>Customer / Pattern</div>
+          <div>Priority</div>
+          <div>Amount</div>
+          <div>Channel</div>
+          <div>Location</div>
+          <div>Decision</div>
+          <div></div>
+        </div>
+        <div id="alertsList" class="max-h-[700px] overflow-y-auto">
+          <div class="loading-shimmer h-16 m-4"></div>
+          <div class="loading-shimmer h-16 m-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB: CASES -->
+    <section id="tab-cases" class="tab-content hidden">
+      <div class="bg-white rounded-xl p-6 border border-gray-200">
+        <h2 class="font-georgia text-lg font-bold mb-4 text-navy">📁 Investigation Cases</h2>
+        <div id="casesList"></div>
+      </div>
+    </section>
+
+    <!-- TAB: ANALYTICS -->
+    <section id="tab-analytics" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <h2 class="font-georgia text-lg font-bold mb-4 text-navy">Decisions Distribution</h2>
+          <div class="chart-container">
+            <canvas id="decisionChart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <h2 class="font-georgia text-lg font-bold mb-4 text-navy">Fraud Patterns Detected</h2>
+          <div class="chart-container">
+            <canvas id="patternChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <h2 class="font-georgia text-lg font-bold mb-4 text-navy">Risk Score Distribution</h2>
+          <div class="chart-container">
+            <canvas id="riskDistChart"></canvas>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl p-6 border border-gray-200">
+          <h2 class="font-georgia text-lg font-bold mb-4 text-navy">Detection Layer Contribution</h2>
+          <div class="chart-container">
+            <canvas id="layerChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Alert Detail Modal -->
+  <div id="alertModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="p-6 border-b border-gray-200 flex items-start justify-between" id="modalHeader"></div>
+      <div class="p-6">
+        <!-- Risk overview -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div class="text-xs text-red-600 uppercase">Risk Score</div>
+            <div class="text-3xl font-bold text-red-700" id="modalRisk">--</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 uppercase">Amount</div>
+            <div class="text-2xl font-bold text-navy" id="modalAmount">--</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 uppercase">Channel</div>
+            <div class="text-lg font-bold text-navy" id="modalChannel">--</div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 uppercase">Location</div>
+            <div class="text-lg font-bold text-navy" id="modalLocation">--</div>
+          </div>
+        </div>
+
+        <!-- Risk signals -->
+        <div class="mb-6">
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Risk Signals (<span id="signalCount">0</span>)
+          </h3>
+          <div id="modalSignals" class="space-y-2"></div>
+        </div>
+
+        <!-- Recommended action -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <h3 class="text-sm font-semibold text-yellow-800 mb-1">⚡ Recommended Action</h3>
+          <p class="text-sm text-yellow-700" id="modalAction">--</p>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-6">
+          <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Detection Summary</h3>
+          <p class="text-sm text-gray-700" id="modalDescription">--</p>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
+          <button id="approveBtn" class="action-btn action-btn-success">✓ Approve Transaction</button>
+          <button id="blockBtn" class="action-btn action-btn-danger">🚫 Block Transaction</button>
+          <button id="closeModalBtn" class="action-btn action-btn-secondary ml-auto">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { fraudAPI } from '/js/fraud/api.js';
+
+    let allAlerts = [];
+    let allCases = [];
+    let summary = {};
+    let currentAlert = null;
+    let decisionFilter = 'ALL';
+    let priorityFilter = 'ALL';
+    let decisionChart = null, patternChart = null, riskDistChart = null, layerChart = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAll();
+      setupListeners();
+    });
+
+    function setupListeners() {
+      document.getElementById('refreshBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('refreshBtn');
+        const icon = document.getElementById('refreshIcon');
+        btn.disabled = true;
+        icon.classList.add('animate-spin');
+        try {
+          await fraudAPI.refresh();
+          await loadAll();
+        } catch (e) { console.error(e); }
+        btn.disabled = false;
+        icon.classList.remove('animate-spin');
+      });
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const tab = btn.dataset.tab;
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+          document.getElementById(`tab-${tab}`).classList.remove('hidden');
+          if (tab === 'cases') renderCases();
+          if (tab === 'analytics') renderAnalytics();
+        });
+      });
+
+      document.querySelectorAll('[data-decision]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-decision]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          decisionFilter = btn.dataset.decision;
+          renderAlerts();
+        });
+      });
+
+      document.querySelectorAll('[data-priority]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-priority]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          priorityFilter = btn.dataset.priority;
+          renderAlerts();
+        });
+      });
+
+      document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+      document.getElementById('alertModal').addEventListener('click', (e) => {
+        if (e.target.id === 'alertModal') closeModal();
+      });
+      document.getElementById('approveBtn').addEventListener('click', approveCurrent);
+      document.getElementById('blockBtn').addEventListener('click', blockCurrent);
+    }
+
+    async function loadAll() {
+      try {
+        const [dash, sum] = await Promise.all([fraudAPI.getDashboard(), fraudAPI.getSummary()]);
+        allAlerts = dash.alerts;
+        allCases = dash.cases;
+        summary = dash.summary;
+        renderStats();
+        renderAlerts();
+        renderCases();
+        renderAnalytics();
+        updateTimestamp();
+      } catch (err) { console.error('Load failed:', err); }
+    }
+
+    function updateTimestamp() {
+      document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+    }
+
+    function renderStats() {
+      document.getElementById('statScanned').textContent = summary.total_scanned?.toLocaleString() || 0;
+      document.getElementById('statFlagged').textContent = summary.total_flagged || 0;
+      document.getElementById('statFraudRate').textContent = `${summary.fraud_rate_pct || 0}% fraud rate`;
+      document.getElementById('statApproved').textContent = summary.approved || 0;
+      document.getElementById('statReview').textContent = summary.manual_review || 0;
+      document.getElementById('statBlocked').textContent = summary.blocked || 0;
+      document.getElementById('statAtRisk').textContent = formatCurrency(summary.total_amount_at_risk);
+      document.getElementById('statProtected').textContent = formatCurrency(summary.total_amount_protected);
+      document.getElementById('statCases').textContent = summary.active_cases || 0;
+    }
+
+    function renderAlerts() {
+      let filtered = allAlerts;
+      if (decisionFilter !== 'ALL') {
+        filtered = filtered.filter(a => a.decision === decisionFilter || a.decision === decisionFilter.replace(' ', '_'));
+      }
+      if (priorityFilter !== 'ALL') {
+        filtered = filtered.filter(a => a.priority.startsWith(priorityFilter));
+      }
+      document.getElementById('filteredCount').textContent = filtered.length;
+      document.getElementById('alertCount').textContent = `(${allAlerts.length})`;
+
+      const list = document.getElementById('alertsList');
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="p-12 text-center text-gray-500">No alerts match your filters.</div>';
+        return;
+      }
+      list.innerHTML = filtered.slice(0, 200).map(a => {
+        const riskClass = a.risk_score < 40 ? 'risk-low' : a.risk_score < 60 ? 'risk-medium' : a.risk_score < 80 ? 'risk-high' : 'risk-critical';
+        const prioClass = `priority-${a.priority.split(' ')[0]}`;
+        const decClass = `decision-${a.decision.replace(' ', '_')}`;
+        return `
+          <div class="alert-row" data-alert-id="${a.id}">
+            <div>
+              <div class="text-sm font-bold text-navy">${a.risk_score.toFixed(0)}</div>
+              <div class="risk-meter"><div class="risk-meter-fill ${riskClass}" style="width: ${a.risk_score}%;"></div></div>
+            </div>
+            <div>
+              <div class="font-semibold text-navy">${a.customer_id}</div>
+              <div class="text-xs text-red-600">${a.pattern} · ${a.signals.length} signals</div>
+            </div>
+            <div><span class="priority-badge ${prioClass}">${a.priority.split(' ')[0]}</span></div>
+            <div class="font-mono text-sm font-semibold text-red-600">${formatCurrency(a.amount)}</div>
+            <div class="text-sm text-gray-700">${a.channel}</div>
+            <div class="text-xs text-gray-500">${a.location}</div>
+            <div><span class="decision-badge ${decClass}">${a.decision}</span></div>
+            <div>
+              <button class="text-gold-dark hover:underline text-xs" data-action="view">View →</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      list.querySelectorAll('.alert-row').forEach(row => {
+        row.addEventListener('click', () => openModal(row.dataset.alertId));
+      });
+    }
+
+    function renderCases() {
+      const list = document.getElementById('casesList');
+      if (allCases.length === 0) {
+        list.innerHTML = '<div class="text-center text-gray-500 py-8">No active cases</div>';
+        return;
+      }
+      list.innerHTML = allCases.map(c => {
+        const prioClass = `priority-${c.priority.split(' ')[0]}`;
+        return `
+          <div class="border-l-4 ${c.priority.includes('P1') ? 'border-red-500' : c.priority.includes('P2') ? 'border-orange-500' : 'border-yellow-500'} bg-gray-50 rounded-r-lg p-4 mb-3">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="priority-badge ${prioClass}">${c.priority}</span>
+                  <span class="font-bold text-navy">${c.id}</span>
+                  <span class="text-sm text-gray-500">${c.pattern}</span>
+                </div>
+                <div class="text-sm text-gray-600 mt-1">Customer: <span class="font-mono font-semibold">${c.customer_id}</span> · Assigned: <span class="font-semibold">${c.assigned_to || 'Unassigned'}</span></div>
+                <div class="text-xs text-gray-500 mt-1">Opened: ${new Date(c.opened_at).toLocaleString()} · ${c.alert_ids.length} alert(s)</div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-gray-500 uppercase">At Risk</div>
+                <div class="text-xl font-bold text-red-600">${formatCurrency(c.total_amount_at_risk)}</div>
+                <div class="text-xs text-green-600">Recovered: ${formatCurrency(c.amount_recovered)}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAnalytics() {
+      // Decision chart
+      const ctx1 = document.getElementById('decisionChart').getContext('2d');
+      if (decisionChart) decisionChart.destroy();
+      const decs = summary.by_decision || {};
+      decisionChart = new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(decs),
+          datasets: [{
+            data: Object.values(decs),
+            backgroundColor: ['#16A34A', '#F59E0B', '#DC2626'],
+            borderColor: '#fff', borderWidth: 2,
+          }],
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } },
+      });
+
+      // Pattern chart
+      const ctx2 = document.getElementById('patternChart').getContext('2d');
+      if (patternChart) patternChart.destroy();
+      const patterns = summary.by_pattern || {};
+      patternChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(patterns),
+          datasets: [{
+            label: 'Count',
+            data: Object.values(patterns),
+            backgroundColor: '#DC2626',
+            borderColor: '#991B1B',
+            borderWidth: 1,
+            borderRadius: 4,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: { x: { grid: { color: '#F3F4F6' } }, y: { grid: { display: false } } },
+        },
+      });
+
+      // Risk dist
+      const ctx3 = document.getElementById('riskDistChart').getContext('2d');
+      if (riskDistChart) riskDistChart.destroy();
+      const riskDist = summary.by_risk_bucket || {};
+      riskDistChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(riskDist),
+          datasets: [{
+            label: 'Alerts',
+            data: Object.values(riskDist),
+            backgroundColor: ['#16A34A', '#84CC16', '#F59E0B', '#EA580C', '#DC2626'],
+            borderWidth: 0, borderRadius: 4,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, grid: { color: '#F3F4F6' } }, x: { grid: { display: false } } },
+        },
+      });
+
+      // Layer chart
+      const ctx4 = document.getElementById('layerChart').getContext('2d');
+      if (layerChart) layerChart.destroy();
+      const layers = summary.layer_contribution || {};
+      layerChart = new Chart(ctx4, {
+        type: 'radar',
+        data: {
+          labels: Object.keys(layers),
+          datasets: [{
+            label: 'Avg Contribution',
+            data: Object.values(layers),
+            backgroundColor: 'rgba(212, 175, 55, 0.2)',
+            borderColor: '#D4AF37',
+            borderWidth: 2,
+            pointBackgroundColor: '#D4AF37',
+          }],
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0 } } },
+      });
+    }
+
+    async function openModal(alertId) {
+      try {
+        const alert = await fraudAPI.getAlert(alertId);
+        currentAlert = alert;
+        const header = document.getElementById('modalHeader');
+        const prioClass = `priority-${alert.priority.split(' ')[0]}`;
+        const decClass = `decision-${alert.decision.replace(' ', '_')}`;
+        header.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="priority-badge ${prioClass}">${alert.priority}</span>
+              <span class="decision-badge ${decClass}">${alert.decision}</span>
+              <span class="text-sm text-gray-500">${alert.pattern}</span>
+            </div>
+            <h2 class="font-georgia text-2xl font-bold text-navy">${alert.id}</h2>
+            <p class="text-sm text-gray-500">Transaction ${alert.transaction_id} · Customer ${alert.customer_id}</p>
+          </div>
+          <button onclick="document.getElementById('alertModal').classList.remove('open')" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+        `;
+        document.getElementById('modalRisk').textContent = alert.risk_score.toFixed(0);
+        document.getElementById('modalAmount').textContent = formatCurrency(alert.amount);
+        document.getElementById('modalChannel').textContent = alert.channel;
+        document.getElementById('modalLocation').textContent = alert.location;
+        document.getElementById('modalAction').textContent = alert.recommended_action;
+        document.getElementById('modalDescription').textContent = alert.description;
+        document.getElementById('signalCount').textContent = alert.signals.length;
+        // Sort signals by score*weight desc
+        const sorted = [...alert.signals].sort((a, b) => (b.score * b.weight) - (a.score * a.weight));
+        document.getElementById('modalSignals').innerHTML = sorted.map(s => `
+          <div class="signal-row">
+            <div class="flex-shrink-0 w-12 text-center">
+              <div class="text-2xl font-bold text-red-600">${s.score}</div>
+              <div class="text-[9px] text-gray-500 uppercase">score</div>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono px-2 py-0.5 bg-navy text-gold rounded">${s.layer}</span>
+                <span class="font-semibold text-navy">${s.rule}</span>
+              </div>
+              <div class="text-sm text-gray-700 mt-1">${s.description}</div>
+              <div class="text-xs text-gray-500 font-mono mt-1">${JSON.stringify(s.evidence)}</div>
+            </div>
+            <div class="flex-shrink-0 w-16 text-right">
+              <div class="text-xs text-gray-500">weight</div>
+              <div class="text-lg font-bold text-navy">${(s.weight * 100).toFixed(0)}%</div>
+            </div>
+          </div>
+        `).join('');
+        document.getElementById('alertModal').classList.add('open');
+      } catch (e) { console.error(e); }
+    }
+
+    function closeModal() {
+      document.getElementById('alertModal').classList.remove('open');
+      currentAlert = null;
+    }
+
+    async function approveCurrent() {
+      if (!currentAlert) return;
+      try {
+        await fraudAPI.approve(currentAlert.id, 'current_user');
+        alert('✓ Transaction approved and released.');
+        closeModal();
+        await loadAll();
+      } catch (e) { alert('Failed: ' + e.message); }
+    }
+
+    async function blockCurrent() {
+      if (!currentAlert) return;
+      if (!confirm('Block this transaction? Customer will be notified.')) return;
+      try {
+        await fraudAPI.block(currentAlert.id, 'current_user');
+        alert('🚫 Transaction blocked.');
+        closeModal();
+        await loadAll();
+      } catch (e) { alert('Failed: ' + e.message); }
+    }
+
+    function formatCurrency(n) {
+      if (!n) return 'Rp 0';
+      if (n >= 1e9) return `Rp ${(n/1e9).toFixed(2)}B`;
+      if (n >= 1e6) return `Rp ${(n/1e6).toFixed(1)}M`;
+      if (n >= 1e3) return `Rp ${(n/1e3).toFixed(0)}K`;
+      return `Rp ${n.toFixed(0)}`;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+# Prometheus - ServiceMonitor for MDM services
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: mdm-services
+  namespace: mdm
+  labels:
+    app: mdm
+    release: prometheus
+spec:
+  namespaceSelector:
+    matchNames:
+      - mdm
+  selector:
+    matchLabels:
+      tier: backend
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_app]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mdm-alerts
+  namespace: mdm
+  labels:
+    app: mdm
+    release: prometheus
+spec:
+  groups:
+    - name: mdm-services
+      interval: 30s
+      rules:
+        # Service down
+        - alert: ServiceDown
+          expr: up{namespace="mdm"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Service {{ $labels.service }} is down"
+            description: "Service {{ $labels.pod }} in namespace {{ $labels.namespace }} has been down for more than 2 minutes."
+
+        # High CPU
+        - alert: HighCPUUsage
+          expr: |
+            rate(container_cpu_usage_seconds_total{namespace="mdm"}[5m]) * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High CPU usage on {{ $labels.pod }}"
+            description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+        # High memory
+        - alert: HighMemoryUsage
+          expr: |
+            container_memory_usage_bytes{namespace="mdm"} / container_spec_memory_limit_bytes{namespace="mdm"} * 100 > 85
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage on {{ $labels.pod }}"
+
+        # High error rate
+        - alert: HighErrorRate
+          expr: |
+            sum(rate(http_server_requests_seconds_count{namespace="mdm",status=~"5.."}[5m]))
+            /
+            sum(rate(http_server_requests_seconds_count{namespace="mdm"}[5m])) * 100 > 5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High 5xx error rate"
+
+        # Slow response
+        - alert: SlowResponseTime
+          expr: |
+            histogram_quantile(0.99,
+              sum by (le, service) (rate(http_server_requests_seconds_bucket{namespace="mdm"}[5m]))
+            ) > 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "p99 response time > 1s for {{ $labels.service }}"
+
+        # Database connection pool exhaustion
+        - alert: DBConnectionPoolHigh
+          expr: |
+            hikaricp_connections_active{namespace="mdm"} / hikaricp_connections_max{namespace="mdm"} * 100 > 80
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "DB connection pool > 80% for {{ $labels.pod }}"
+
+        # Kafka consumer lag
+        - alert: KafkaConsumerLag
+          expr: kafka_consumer_lag{namespace="mdm"} > 10000
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Kafka consumer lag > 10K for {{ $labels.topic }}"
+
+        # Pod restarting
+        - alert: PodRestartingFrequently
+          expr: increase(kube_pod_container_status_restarts_total{namespace="mdm"}[1h]) > 5
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} restarting frequently"

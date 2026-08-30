@@ -1,0 +1,17 @@
+"""Health check schemas."""
+from pydantic import BaseModel
+
+
+class HealthResponse(BaseModel):
+    """Liveness response."""
+    status: str
+    service: str
+    version: str
+
+
+class ReadinessResponse(BaseModel):
+    """Readiness response with dependency checks."""
+    status: str
+    service: str
+    version: str
+    checks: dict[str, str]

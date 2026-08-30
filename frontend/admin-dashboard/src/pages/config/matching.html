@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matching Configuration - MDM Admin</title>
+    <link rel="stylesheet" href="../../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="matchingConfigPage()" x-init="init()">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold">Matching Engine Configuration</h1>
+      <p class="text-sm text-gray-500">Configure matching algorithms, thresholds, field weights</p>
+    </div>
+
+    <!-- Algorithm Selection -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Active Algorithm</h3>
+        <p class="text-sm text-gray-500 mb-4">Choose primary matching strategy</p>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <template x-for="algo in algorithms" :key="algo.code">
+            <div class="cursor-pointer rounded-md border-2 p-4 transition-colors"
+                 :class="activeAlgorithm === algo.code ? 'border-primary bg-primary/5' : 'border-base-300 hover:border-primary/50'"
+                 @click="activeAlgorithm = algo.code">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-semibold" x-text="algo.name"></h4>
+                <span x-show="activeAlgorithm === algo.code" class="badge badge-primary badge-sm">Active</span>
+              </div>
+              <p class="text-xs text-gray-500" x-text="algo.description"></p>
+              <div class="mt-2 flex items-center gap-2 text-xs">
+                <span class="badge badge-sm" x-text="'Accuracy: ' + algo.accuracy"></span>
+                <span class="badge badge-sm" x-text="'Speed: ' + algo.speed"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thresholds -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Match Thresholds</h3>
+        <p class="text-sm text-gray-500 mb-4">Tune precision vs recall trade-off</p>
+
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between mb-1">
+              <label class="text-sm font-medium">Default Match Threshold</label>
+              <span class="font-mono text-sm" x-text="thresholds.default"></span>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" x-model.number="thresholds.default" class="range range-primary" />
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>0.0 (low - many false positives)</span>
+              <span>1.0 (high - many false negatives)</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Pairs dengan score ≥ threshold akan masuk review queue</p>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <label class="text-sm font-medium">Auto-Merge Threshold</label>
+              <span class="font-mono text-sm text-success" x-text="thresholds.autoMerge"></span>
+            </div>
+            <input type="range" min="0.5" max="1" step="0.01" x-model.number="thresholds.autoMerge" class="range range-success" />
+            <div class="flex justify-between text-xs text-gray-500">
+              <span>0.5 (permissive)</span>
+              <span>1.0 (very strict)</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Pairs dengan score ≥ threshold akan otomatis di-merge (no human review)</p>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <label class="text-sm font-medium">High Risk Threshold (Fuzzy)</label>
+              <span class="font-mono text-sm text-warning" x-text="thresholds.fuzzy"></span>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" x-model.number="thresholds.fuzzy" class="range range-warning" />
+            <p class="text-xs text-gray-500 mt-1">Untuk nama dengan typo atau ejaan berbeda</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Field Weights -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Field Weights (must sum to 1.00)</h3>
+        <p class="text-sm text-gray-500 mb-4">Higher weight = field lebih penting dalam scoring</p>
+
+        <div class="space-y-3">
+          <template x-for="field in fieldWeights" :key="field.name">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium" x-text="field.label"></span>
+                <span class="font-mono text-sm" x-text="field.weight.toFixed(2)"></span>
+              </div>
+              <input type="range" min="0" max="1" step="0.05" x-model.number="field.weight" class="range range-primary" />
+            </div>
+          </template>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between rounded-md bg-base-200 p-3">
+          <span class="text-sm font-medium">Total weight:</span>
+          <span class="font-mono text-lg font-bold" :class="Math.abs(totalWeight - 1) < 0.01 ? 'text-success' : 'text-error'" x-text="totalWeight.toFixed(2)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div class="card-actions justify-end">
+      <button @click="testMatching()" class="btn btn-ghost">Test Matching</button>
+      <button @click="save()" class="btn btn-primary">Save Configuration</button>
+    </div>
+
+    <script type="module">
+      function matchingConfigPage() {
+        return {
+          activeAlgorithm: 'HYBRID',
+          thresholds: {
+            default: 0.85,
+            autoMerge: 0.95,
+            fuzzy: 0.78,
+          },
+          algorithms: [
+            { code: 'EXACT', name: 'Exact Match', description: 'Cocok persis untuk semua field', accuracy: '100%', speed: 'Very Fast' },
+            { code: 'LEVENSHTEIN', name: 'Levenshtein Distance', description: 'Jarak edit untuk typo dan ejaan berbeda', accuracy: '92%', speed: 'Fast' },
+            { code: 'JAROWINKLER', name: 'Jaro-Winkler', description: 'Baik untuk nama (prefix matching)', accuracy: '94%', speed: 'Fast' },
+            { code: 'PHONETIC', name: 'Phonetic (Soundex)', description: 'Cocok untuk nama yang terdengar sama', accuracy: '88%', speed: 'Very Fast' },
+            { code: 'FUZZY', name: 'Fuzzy Logic', description: 'Multi-criteria fuzzy matching', accuracy: '96%', speed: 'Medium' },
+            { code: 'HYBRID', name: 'Hybrid (Recommended)', description: 'Gabungan semua algoritma di atas', accuracy: '98%', speed: 'Medium' },
+          ],
+          fieldWeights: [
+            { name: 'fullName', label: 'Full Name (Nama Lengkap)', weight: 0.40 },
+            { name: 'nik', label: 'NIK (16 digit)', weight: 0.30 },
+            { name: 'dateOfBirth', label: 'Date of Birth', weight: 0.15 },
+            { name: 'phone', label: 'Phone Number', weight: 0.10 },
+            { name: 'email', label: 'Email', weight: 0.05 },
+          ],
+
+          get totalWeight() {
+            return this.fieldWeights.reduce((sum, f) => sum + f.weight, 0);
+          },
+
+          async init() {},
+
+          async save() {
+            if (Math.abs(this.totalWeight - 1) > 0.01) {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Total weight harus = 1.00!', type: 'error' } }));
+              return;
+            }
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Matching configuration saved', type: 'success' } }));
+          },
+
+          async testMatching() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Running test match with 100 sample pairs...', type: 'info' } }));
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Test complete: 87 true matches, 13 false positives (87% accuracy)', type: 'success' } }));
+            }, 2000);
+          },
+        };
+      }
+
+      window.matchingConfigPage = matchingConfigPage;
+    </script>
+  </body>
+</html>

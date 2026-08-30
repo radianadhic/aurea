@@ -1,0 +1,24 @@
+{
+  "app": {
+    "name": "AUREA 360",
+    "tagline": "The Gold Standard of Data"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "customers": "Customers",
+    "analytics": "Analytics",
+    "insights": "Insights",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard 360",
+    "welcome": "Welcome to AUREA 360"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}

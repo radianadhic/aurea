@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scheduled Reports - MDM Admin</title>
+    <link rel="stylesheet" href="../../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="scheduledPage()" x-init="init()">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Scheduled Reports</h1>
+        <p class="text-sm text-gray-500">Manage automated report generation and distribution</p>
+      </div>
+      <button @click="openCreate()" class="btn btn-primary">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        New Schedule
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div class="card-stat">
+        <p class="stat-label">Active Schedules</p>
+        <p class="stat-value" x-text="activeCount"></p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Reports Generated (Today)</p>
+        <p class="stat-value">12</p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Subscribers</p>
+        <p class="stat-value">234</p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Failed (Last 7d)</p>
+        <p class="stat-value text-error">2</p>
+      </div>
+    </div>
+
+    <!-- Schedules Table -->
+    <div class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Report</th>
+                <th>Schedule</th>
+                <th>Format</th>
+                <th>Recipients</th>
+                <th>Last Run</th>
+                <th>Next Run</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="s in schedules" :key="s.id">
+                <tr>
+                  <td>
+                    <div class="font-medium" x-text="s.name"></div>
+                    <div class="text-xs text-gray-500 font-mono" x-text="s.code"></div>
+                  </td>
+                  <td>
+                    <div class="text-sm" x-text="s.frequency"></div>
+                    <div class="text-xs text-gray-500 font-mono" x-text="s.cron"></div>
+                  </td>
+                  <td>
+                    <span class="badge badge-sm" x-text="s.format"></span>
+                  </td>
+                  <td>
+                    <span class="text-sm" x-text="s.recipientCount + ' users'"></span>
+                    <div class="text-xs text-gray-500" x-text="s.recipientGroups"></div>
+                  </td>
+                  <td class="text-xs" x-text="s.lastRun"></td>
+                  <td class="text-xs" x-text="s.nextRun"></td>
+                  <td>
+                    <label class="cursor-pointer">
+                      <input type="checkbox" class="toggle toggle-success toggle-sm" :checked="s.active" @change="toggleSchedule(s)" />
+                    </label>
+                  </td>
+                  <td>
+                    <button @click="runNow(s)" class="btn btn-xs btn-ghost">Run Now</button>
+                    <button @click="edit(s)" class="btn btn-xs btn-primary">Edit</button>
+                    <button @click="deleteSchedule(s)" class="btn btn-xs btn-error">×</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <dialog x-ref="modal" class="modal">
+      <div class="modal-box max-w-2xl">
+        <h3 class="text-lg font-bold mb-4" x-text="editing ? 'Edit Schedule' : 'New Schedule'"></h3>
+        <form @submit.prevent="save()">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="md:col-span-2">
+              <label class="form-label">Report *</label>
+              <select class="form-input" x-model="form.reportId" required>
+                <option value="">Select a report</option>
+                <template x-for="r in availableReports" :key="r.id">
+                  <option :value="r.id" x-text="r.name"></option>
+                </template>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Frequency *</label>
+              <select class="form-input" x-model="form.frequency" required>
+                <option value="DAILY">Daily</option>
+                <option value="WEEKLY">Weekly</option>
+                <option value="MONTHLY">Monthly</option>
+                <option value="QUARTERLY">Quarterly</option>
+                <option value="CRON">Custom (Cron)</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Time</label>
+              <input type="time" class="form-input" x-model="form.time" />
+            </div>
+            <div class="md:col-span-2" x-show="form.frequency === 'CRON'">
+              <label class="form-label">Cron Expression</label>
+              <input type="text" class="form-input font-mono" x-model="form.cron" placeholder="0 0 8 * * ?" />
+              <p class="text-xs text-gray-500 mt-1">e.g., 0 0 8 * * ? = setiap hari jam 8 pagi</p>
+            </div>
+            <div>
+              <label class="form-label">Format</label>
+              <select class="form-input" x-model="form.format">
+                <option value="PDF">PDF</option>
+                <option value="EXCEL">Excel</option>
+                <option value="CSV">CSV</option>
+                <option value="JSON">JSON</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Timezone</label>
+              <select class="form-input" x-model="form.timezone">
+                <option>Asia/Jakarta</option>
+                <option>Asia/Makassar</option>
+                <option>Asia/Jayapura</option>
+                <option>UTC</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="form-label">Recipients *</label>
+              <div class="rounded-md border border-base-300 p-2 space-y-1">
+                <template x-for="(r, i) in form.recipients" :key="i">
+                  <div class="flex items-center gap-2">
+                    <select class="form-input form-input-sm" x-model="r.type" style="width: auto;">
+                      <option value="email">Email</option>
+                      <option value="role">Role</option>
+                      <option value="user">User</option>
+                    </select>
+                    <input type="text" class="form-input form-input-sm flex-1" x-model="r.value" :placeholder="r.type === 'email' ? 'user@bankxyz.co.id' : r.type === 'role' ? 'STEWARD_CIF' : 'username'" />
+                    <button @click="form.recipients.splice(i, 1)" class="btn btn-xs btn-error">×</button>
+                  </div>
+                </template>
+                <button type="button" @click="form.recipients.push({type: 'email', value: ''})" class="btn btn-xs btn-ghost">+ Add Recipient</button>
+              </div>
+            </div>
+            <div class="md:col-span-2">
+              <label class="form-label cursor-pointer flex items-center gap-2">
+                <input type="checkbox" class="checkbox checkbox-primary" x-model="form.active" />
+                <span>Active</span>
+              </label>
+            </div>
+            <div class="md:col-span-2">
+              <label class="form-label cursor-pointer flex items-center gap-2">
+                <input type="checkbox" class="checkbox checkbox-primary" x-model="form.encrypted" />
+                <span>Encrypt report (for sensitive data)</span>
+              </label>
+            </div>
+          </div>
+          <div class="modal-action">
+            <button type="button" @click="closeModal()" class="btn btn-ghost">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <script type="module">
+      function scheduledPage() {
+        return {
+          editing: null,
+          form: { reportId: '', frequency: 'DAILY', time: '08:00', cron: '', format: 'PDF', timezone: 'Asia/Jakarta', recipients: [{type:'email', value:''}], active: true, encrypted: false },
+          availableReports: [
+            { id: 1, name: 'CIF Growth Monthly' },
+            { id: 2, name: 'Duplicate Trends' },
+            { id: 3, name: 'KYC Pending Review' },
+            { id: 4, name: 'OJK Monthly Report' },
+            { id: 5, name: 'PPATK STR Daily' },
+            { id: 6, name: 'User Activity Audit' },
+            { id: 7, name: 'Data Quality Score' },
+            { id: 8, name: 'Customer Churn Forecast' },
+          ],
+          schedules: [
+            { id: 1, name: 'CIF Growth Monthly', code: 'SCH-CIF-GROWTH', frequency: 'Monthly (1st of month)', cron: '0 0 8 1 * ?', format: 'PDF/Excel', recipientCount: 8, recipientGroups: 'Executive, Stewardship', lastRun: '2026-08-01 08:00', nextRun: '2026-09-01 08:00', active: true },
+            { id: 2, name: 'KYC Pending Review Daily', code: 'SCH-KYC-PENDING', frequency: 'Daily', cron: '0 0 7 * * ?', format: 'Excel', recipientCount: 12, recipientGroups: 'STEWARD_CIF', lastRun: '2026-08-26 07:00', nextRun: '2026-08-27 07:00', active: true },
+            { id: 3, name: 'PPATK STR Daily', code: 'SCH-PPATK-STR', frequency: 'Daily', cron: '0 0 18 * * ?', format: 'XML', recipientCount: 3, recipientGroups: 'COMPLIANCE', lastRun: '2026-08-25 18:00', nextRun: '2026-08-26 18:00', active: true },
+            { id: 4, name: 'OJK Monthly Report', code: 'SCH-OJK-MONTHLY', frequency: 'Monthly (5th)', cron: '0 0 9 5 * ?', format: 'PDF/XML', recipientCount: 5, recipientGroups: 'EXECUTIVE, COMPLIANCE', lastRun: '2026-08-05 09:00', nextRun: '2026-09-05 09:00', active: true },
+            { id: 5, name: 'Audit Log Weekly', code: 'SCH-AUDIT-WEEKLY', frequency: 'Weekly (Monday)', cron: '0 0 6 ? * MON', format: 'PDF', recipientCount: 4, recipientGroups: 'AUDITOR', lastRun: '2026-08-25 06:00', nextRun: '2026-09-01 06:00', active: true },
+            { id: 6, name: 'Data Quality Score', code: 'SCH-DQ-SCORE', frequency: 'Daily', cron: '0 0 23 * * ?', format: 'PDF', recipientCount: 6, recipientGroups: 'STEWARD, ADMIN', lastRun: '2026-08-25 23:00', nextRun: '2026-08-26 23:00', active: true },
+            { id: 7, name: 'Inactive Schedule', code: 'SCH-TEST-1', frequency: 'Daily', cron: '0 0 12 * * ?', format: 'PDF', recipientCount: 2, recipientGroups: 'TEST', lastRun: '2026-08-20 12:00', nextRun: 'Paused', active: false },
+          ],
+
+          get activeCount() { return this.schedules.filter(s => s.active).length; },
+
+          async init() {},
+
+          openCreate() {
+            this.editing = null;
+            this.form = { reportId: '', frequency: 'DAILY', time: '08:00', cron: '', format: 'PDF', timezone: 'Asia/Jakarta', recipients: [{type:'email', value:''}], active: true, encrypted: false };
+            this.$refs.modal.showModal();
+          },
+
+          edit(s) {
+            this.editing = s;
+            this.form = { ...s, recipients: [{type:'email', value:''}] };
+            this.$refs.modal.showModal();
+          },
+
+          closeModal() { this.$refs.modal.close(); },
+
+          async save() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Schedule saved', type: 'success' } }));
+            this.closeModal();
+          },
+
+          async toggleSchedule(s) {
+            s.active = !s.active;
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Schedule ${s.active ? 'enabled' : 'paused'}`, type: 'success' } }));
+          },
+
+          async runNow(s) {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Generating "${s.name}" now...`, type: 'info' } }));
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Report generated and sent to ${s.recipientCount} recipients`, type: 'success' } }));
+            }, 2000);
+          },
+
+          async deleteSchedule(s) {
+            if (confirm(`Delete schedule "${s.name}"?`)) {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Schedule deleted', type: 'success' } }));
+            }
+          },
+        };
+      }
+
+      window.scheduledPage = scheduledPage;
+    </script>
+  </body>
+</html>

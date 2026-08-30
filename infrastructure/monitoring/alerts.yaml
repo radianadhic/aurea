@@ -1,0 +1,130 @@
+# Prometheus alerting rules for MDM production
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mdm-alerts
+  namespace: mdm-prod
+  labels:
+    app: mdm
+spec:
+  groups:
+  - name: mdm.services
+    interval: 30s
+    rules:
+    - alert: HighErrorRate
+      expr: |
+        (
+          sum by (service) (rate(http_requests_total{status=~"5.."}[5m]))
+          / sum by (service) (rate(http_requests_total[5m]))
+        ) > 0.05
+      for: 5m
+      labels:
+        severity: critical
+        team: backend
+      annotations:
+        summary: "High error rate on {{ $labels.service }}"
+        description: "{{ $labels.service }} has error rate {{ $value | humanizePercentage }} over last 5 minutes"
+        runbook: https://wiki.bankxyz.co.id/runbooks/high-error-rate
+
+    - alert: HighLatency
+      expr: |
+        histogram_quantile(0.95,
+          sum by (service, le) (rate(http_request_duration_seconds_bucket[5m]))
+        ) > 1.0
+      for: 10m
+      labels:
+        severity: warning
+        team: backend
+      annotations:
+        summary: "High latency on {{ $labels.service }}"
+        description: "P95 latency on {{ $labels.service }} is {{ $value }}s"
+
+    - alert: ServiceDown
+      expr: |
+        up{job=~"mdm-.*"} == 0
+      for: 2m
+      labels:
+        severity: critical
+        team: sre
+      annotations:
+        summary: "{{ $labels.job }} is down"
+        description: "{{ $labels.instance }} has been down for more than 2 minutes"
+
+  - name: mdm.resources
+    interval: 60s
+    rules:
+    - alert: HighCPU
+      expr: |
+        (
+          sum by (pod) (rate(container_cpu_usage_seconds_total{pod=~"mdm-.*"}[5m]))
+          / sum by (pod) (kube_pod_container_resource_limits{pod=~"mdm-.*", resource="cpu"})
+        ) > 0.85
+      for: 10m
+      labels:
+        severity: warning
+        team: sre
+      annotations:
+        summary: "High CPU on {{ $labels.pod }}"
+        description: "CPU usage on {{ $labels.pod }} is {{ $value | humanizePercentage }}"
+
+    - alert: HighMemory
+      expr: |
+        (
+          sum by (pod) (container_memory_usage_bytes{pod=~"mdm-.*"})
+          / sum by (pod) (kube_pod_container_resource_limits{pod=~"mdm-.*", resource="memory"})
+        ) > 0.90
+      for: 5m
+      labels:
+        severity: warning
+        team: sre
+      annotations:
+        summary: "High memory on {{ $labels.pod }}"
+
+    - alert: PodCrashLooping
+      expr: |
+        rate(kube_pod_container_status_restarts_total{pod=~"mdm-.*"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        team: sre
+      annotations:
+        summary: "Pod {{ $labels.pod }} is crash looping"
+
+  - name: mdm.business
+    interval: 5m
+    rules:
+    - alert: ChurnRateSpike
+      expr: |
+        (
+          sum(rate(mdm_ml_predictions_total{model="churn", result="high"}[1h]))
+          / sum(rate(mdm_ml_predictions_total{model="churn"}[1h]))
+        ) > 0.20
+      for: 30m
+      labels:
+        severity: warning
+        team: data
+      annotations:
+        summary: "Churn risk spike detected"
+        description: "High churn rate predictions > 20% of total"
+
+    - alert: KYCQueueBacklog
+      expr: |
+        mdm_kyc_pending_total > 500
+      for: 30m
+      labels:
+        severity: warning
+        team: compliance
+      annotations:
+        summary: "KYC review queue backlog"
+        description: "{{ $value }} KYC cases pending review"
+
+    - alert: MatchQueueBacklog
+      expr: |
+        mdm_match_queue_total > 1000
+      for: 1h
+      labels:
+        severity: warning
+        team: data
+      annotations:
+        summary: "Match queue backlog"
+        description: "{{ $value }} match groups in review queue"

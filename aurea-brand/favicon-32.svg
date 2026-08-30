@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="goldFav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD764"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" fill="#0A1929" rx="4"/>
+  <path d="M 16.0 5.76 L 26.24 26.24 L 22.72 26.24 L 20.8 22.4 L 11.2 22.4 L 9.28 26.24 L 5.76 26.24 Z"
+        fill="url(#goldFav)"/>
+  <path d="M 12.8 19.2 L 19.2 19.2 L 18.24 17.28 L 13.76 17.28 Z"
+        fill="#0A1929"/>
+</svg>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Rules Manager - MDM Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../../assets/css/admin.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-slate-900 text-white min-h-screen p-4 fixed">
+      <div class="text-xl font-bold mb-8 px-2">
+        🏦 MDM Admin
+        <div class="text-xs text-slate-400 font-normal">Bank XYZ</div>
+      </div>
+      <nav class="space-y-1 text-sm">
+        <a href="../dashboard.html" class="block px-3 py-2 rounded hover:bg-slate-800">📊 Dashboard</a>
+        <a href="../monitoring.html" class="block px-3 py-2 rounded hover:bg-slate-800">📡 Monitoring</a>
+        <a href="../config.html" class="block px-3 py-2 rounded hover:bg-slate-800">⚙️ Config</a>
+        <a href="nifi.html" class="block px-3 py-2 rounded hover:bg-slate-800">🌊 NiFi</a>
+        <a href="source-systems.html" class="block px-3 py-2 rounded hover:bg-slate-800">🔌 Source Systems</a>
+        <a href="matching.html" class="block px-3 py-2 rounded hover:bg-slate-800">🔄 Matching</a>
+        <a href="etl-display.html" class="block px-3 py-2 rounded hover:bg-slate-800">🖥️ ETL Display</a>
+        <a href="backup.html" class="block px-3 py-2 rounded hover:bg-slate-800">💾 Backup</a>
+        <a href="brm.html" class="block px-3 py-2 rounded bg-blue-600">📜 BRM</a>
+        <a href="../reports.html" class="block px-3 py-2 rounded hover:bg-slate-800">📈 Reports</a>
+        <a href="../health.html" class="block px-3 py-2 rounded hover:bg-slate-800">💚 Health</a>
+        <a href="../dr-failover.html" class="block px-3 py-2 rounded hover:bg-slate-800">🚨 DR</a>
+        <a href="../finops.html" class="block px-3 py-2 rounded hover:bg-slate-800">💰 FinOps</a>
+      </nav>
+    </aside>
+
+    <main class="ml-64 flex-1 p-8">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900">📜 Business Rules Manager (BRM)</h1>
+          <p class="text-sm text-slate-500 mt-1">Kelola business rules untuk validasi, scoring, dan workflow MDM</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-ghost">📥 Import</button>
+          <button class="btn btn-sm btn-ghost">📤 Export</button>
+          <button class="btn btn-sm btn-primary" onclick="openRuleModal()">+ Rule Baru</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+          <p class="text-xs text-slate-500">Total Rules</p>
+          <p class="text-2xl font-bold text-slate-900">147</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <p class="text-xs text-slate-500">Active</p>
+          <p class="text-2xl font-bold text-emerald-600">128</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <p class="text-xs text-slate-500">Draft</p>
+          <p class="text-2xl font-bold text-amber-600">14</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <p class="text-xs text-slate-500">Deprecated</p>
+          <p class="text-2xl font-bold text-slate-500">5</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+          <p class="text-xs text-slate-500">Avg Execution</p>
+          <p class="text-2xl font-bold text-blue-600">42ms</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="border-b border-slate-200 px-6">
+          <div role="tablist" class="tabs tabs-bordered">
+            <a role="tab" class="tab tab-active" data-tab="validation">✅ Validation Rules</a>
+            <a role="tab" class="tab" data-tab="scoring">📊 Scoring Rules</a>
+            <a role="tab" class="tab" data-tab="workflow">🔀 Workflow Rules</a>
+            <a role="tab" class="tab" data-tab="notification">🔔 Notification</a>
+            <a role="tab" class="tab" data-tab="audit">📋 Audit Log</a>
+          </div>
+        </div>
+
+        <!-- Validation Tab -->
+        <div class="p-6" id="tab-validation">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex gap-2">
+              <input type="text" placeholder="Cari rule..." class="input input-bordered input-sm w-64" />
+              <select class="select select-bordered select-sm">
+                <option>Semua Entity</option>
+                <option>Customer</option>
+                <option>Account</option>
+                <option>Transaction</option>
+              </select>
+              <select class="select select-bordered select-sm">
+                <option>Semua Status</option>
+                <option>Active</option>
+                <option>Draft</option>
+                <option>Deprecated</option>
+              </select>
+            </div>
+            <button class="btn btn-sm btn-ghost">🔄 Refresh</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th>ID</th>
+                  <th>Nama Rule</th>
+                  <th>Entity</th>
+                  <th>Field</th>
+                  <th>Operator</th>
+                  <th>Value</th>
+                  <th>Severity</th>
+                  <th>Status</th>
+                  <th>Last Run</th>
+                  <th>Hits</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-mono text-xs">BR-001</td>
+                  <td class="font-medium">Validasi NIK 16 Digit</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>nik</td>
+                  <td><code class="text-xs">matches</code></td>
+                  <td><code class="text-xs">^[0-9]{16}$</code></td>
+                  <td><span class="badge badge-error badge-sm">ERROR</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">2 min ago</td>
+                  <td>1,247</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-002</td>
+                  <td class="font-medium">Validasi Email Format</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>email</td>
+                  <td><code class="text-xs">matches</code></td>
+                  <td><code class="text-xs">^[\w.-]+@[\w.-]+$</code></td>
+                  <td><span class="badge badge-warning badge-sm">WARNING</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">5 min ago</td>
+                  <td>892</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-003</td>
+                  <td class="font-medium">CIF Number Unique</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>cifNumber</td>
+                  <td><code class="text-xs">unique</code></td>
+                  <td><code class="text-xs">-</code></td>
+                  <td><span class="badge badge-error badge-sm">ERROR</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">1 min ago</td>
+                  <td>1,247</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-004</td>
+                  <td class="font-medium">Usia Minimum 17 Tahun</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>dateOfBirth</td>
+                  <td><code class="text-xs">age &gt;=</code></td>
+                  <td><code class="text-xs">17</code></td>
+                  <td><span class="badge badge-error badge-sm">ERROR</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">3 min ago</td>
+                  <td>156</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-005</td>
+                  <td class="font-medium">Income Range Validation</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>monthlyIncome</td>
+                  <td><code class="text-xs">between</code></td>
+                  <td><code class="text-xs">0 - 999,999,999</code></td>
+                  <td><span class="badge badge-warning badge-sm">WARNING</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">7 min ago</td>
+                  <td>523</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-006</td>
+                  <td class="font-medium">Phone Format +62</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>mobilePhone</td>
+                  <td><code class="text-xs">matches</code></td>
+                  <td><code class="text-xs">^(\+62|0)[0-9]+$</code></td>
+                  <td><span class="badge badge-error badge-sm">ERROR</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">4 min ago</td>
+                  <td>987</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-007</td>
+                  <td class="font-medium">Blacklist Mobile Phone</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>mobilePhone</td>
+                  <td><code class="text-xs">not_in</code></td>
+                  <td><code class="text-xs">blacklist_phones</code></td>
+                  <td><span class="badge badge-error badge-sm">ERROR</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td class="text-xs">6 min ago</td>
+                  <td>45</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-ghost">Test</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">BR-008</td>
+                  <td class="font-medium">NPWP Format Check</td>
+                  <td><span class="badge badge-ghost">Customer</span></td>
+                  <td>npwp</td>
+                  <td><code class="text-xs">matches</code></td>
+                  <td><code class="text-xs">^[0-9]{15}$</code></td>
+                  <td><span class="badge badge-warning badge-sm">WARNING</span></td>
+                  <td><span class="badge badge-warning badge-sm">Draft</span></td>
+                  <td class="text-xs">-</td>
+                  <td>0</td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-primary">Activate</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Scoring Tab -->
+        <div class="p-6 hidden" id="tab-scoring">
+          <h3 class="font-semibold mb-4">Risk Scoring Rules</h3>
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th>ID</th>
+                  <th>Rule Name</th>
+                  <th>Condition</th>
+                  <th>Score Adjustment</th>
+                  <th>Status</th>
+                  <th>Hits (30d)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="font-mono text-xs">SR-001</td>
+                  <td class="font-medium">High Income Customer</td>
+                  <td><code class="text-xs">monthlyIncome &gt; 50M</code></td>
+                  <td><span class="text-emerald-600">-10</span> (lower risk)</td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td>2,847</td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">SR-002</td>
+                  <td class="font-medium">PEP Status</td>
+                  <td><code class="text-xs">pepStatus = true</code></td>
+                  <td><span class="text-rose-600">+25</span> (higher risk)</td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td>34</td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">SR-003</td>
+                  <td class="font-medium">Foreign Nationality</td>
+                  <td><code class="text-xs">nationality != 'ID'</code></td>
+                  <td><span class="text-rose-600">+15</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td>156</td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">SR-004</td>
+                  <td class="font-medium">Young Age (under 21)</td>
+                  <td><code class="text-xs">age &lt; 21</code></td>
+                  <td><span class="text-rose-600">+5</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td>823</td>
+                </tr>
+                <tr>
+                  <td class="font-mono text-xs">SR-005</td>
+                  <td class="font-medium">KYC Expired</td>
+                  <td><code class="text-xs">kycStatus = EXPIRED</code></td>
+                  <td><span class="text-rose-600">+30</span></td>
+                  <td><span class="badge badge-success badge-sm">Active</span></td>
+                  <td>67</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Workflow Tab -->
+        <div class="p-6 hidden" id="tab-workflow">
+          <h3 class="font-semibold mb-4">Workflow Routing Rules</h3>
+          <p class="text-sm text-slate-500 mb-4">Aturan routing otomatis untuk KYC review, exception handling, dan approval.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="border border-slate-200 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs">WF-001</span>
+                <span class="badge badge-success badge-sm">Active</span>
+              </div>
+              <h4 class="font-medium mb-1">High Risk → Compliance Lead</h4>
+              <p class="text-xs text-slate-500 mb-2">Semua KYC dengan risk profile HIGH akan di-route ke Compliance Lead</p>
+              <div class="text-xs bg-slate-50 p-2 rounded font-mono">
+                IF riskProfile = HIGH THEN assignTo = "compliance.lead"
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs">WF-002</span>
+                <span class="badge badge-success badge-sm">Active</span>
+              </div>
+              <h4 class="font-medium mb-1">PEP → Senior Steward</h4>
+              <p class="text-xs text-slate-500 mb-2">Customer dengan status PEP memerlukan review dari Senior Steward</p>
+              <div class="text-xs bg-slate-50 p-2 rounded font-mono">
+                IF pepStatus = true THEN assignTo = "senior.steward" AND requiresApproval = true
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs">WF-003</span>
+                <span class="badge badge-success badge-sm">Active</span>
+              </div>
+              <h4 class="font-medium mb-1">Match Score > 95 → Auto-Merge</h4>
+              <p class="text-xs text-slate-500 mb-2">Match group dengan skor di atas 95% langsung auto-merge</p>
+              <div class="text-xs bg-slate-50 p-2 rounded font-mono">
+                IF matchScore >= 95 THEN action = "AUTO_MERGE"
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs">WF-004</span>
+                <span class="badge badge-warning badge-sm">Draft</span>
+              </div>
+              <h4 class="font-medium mb-1">Sanctions Match → Compliance</h4>
+              <p class="text-xs text-slate-500 mb-2">Sanctions match langsung di-escalate ke Compliance</p>
+              <div class="text-xs bg-slate-50 p-2 rounded font-mono">
+                IF sanctionsStatus = MATCH THEN assignTo = "compliance.team" AND priority = "URGENT"
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Tab -->
+        <div class="p-6 hidden" id="tab-notification">
+          <h3 class="font-semibold mb-4">Notification Rules</h3>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-medium">KYC Expiry Reminder</div>
+                <div class="text-xs text-slate-500">Send email 30 days before KYC expires</div>
+              </div>
+              <input type="checkbox" class="toggle toggle-success" checked />
+            </div>
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-medium">High Risk Customer Alert</div>
+                <div class="text-xs text-slate-500">Slack notification to compliance team</div>
+              </div>
+              <input type="checkbox" class="toggle toggle-success" checked />
+            </div>
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-medium">Failed ETL Job Alert</div>
+                <div class="text-xs text-slate-500">PagerDuty integration for ETL failures</div>
+              </div>
+              <input type="checkbox" class="toggle toggle-success" checked />
+            </div>
+            <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+              <div>
+                <div class="font-medium">Daily Match Report</div>
+                <div class="text-xs text-slate-500">Email to stewards at 08:00 WIB</div>
+              </div>
+              <input type="checkbox" class="toggle toggle-success" checked />
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Tab -->
+        <div class="p-6 hidden" id="tab-audit">
+          <h3 class="font-semibold mb-4">Rule Change History</h3>
+          <div class="space-y-3">
+            <div class="border-l-4 border-blue-500 pl-3 py-2">
+              <div class="text-sm font-medium">BR-001: Validasi NIK 16 Digit</div>
+              <div class="text-xs text-slate-500">Changed severity from WARNING to ERROR • by andi.wijaya • 2 days ago</div>
+            </div>
+            <div class="border-l-4 border-emerald-500 pl-3 py-2">
+              <div class="text-sm font-medium">SR-003: Foreign Nationality</div>
+              <div class="text-xs text-slate-500">Activated (was draft) • by siti.aminah • 5 days ago</div>
+            </div>
+            <div class="border-l-4 border-amber-500 pl-3 py-2">
+              <div class="text-sm font-medium">WF-002: PEP → Senior Steward</div>
+              <div class="text-xs text-slate-500">Modified condition • by dewi.lestari • 1 week ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Rule Modal -->
+  <div id="ruleModal" class="modal">
+    <div class="modal-box max-w-2xl">
+      <h3 class="font-bold text-lg mb-4">Buat Rule Baru</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="label label-text">Nama Rule</label>
+          <input type="text" placeholder="Contoh: Validasi NPWP" class="input input-bordered w-full" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="label label-text">Entity</label>
+            <select class="select select-bordered w-full">
+              <option>Customer</option>
+              <option>Account</option>
+              <option>Transaction</option>
+            </select>
+          </div>
+          <div>
+            <label class="label label-text">Severity</label>
+            <select class="select select-bordered w-full">
+              <option>INFO</option>
+              <option>WARNING</option>
+              <option selected>ERROR</option>
+              <option>CRITICAL</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="label label-text">Field</label>
+            <input type="text" placeholder="field_name" class="input input-bordered w-full" />
+          </div>
+          <div>
+            <label class="label label-text">Operator</label>
+            <select class="select select-bordered w-full">
+              <option>=</option>
+              <option>!=</option>
+              <option>&gt;</option>
+              <option>&lt;</option>
+              <option>matches</option>
+              <option>in</option>
+              <option>not_in</option>
+              <option>between</option>
+            </select>
+          </div>
+          <div>
+            <label class="label label-text">Value</label>
+            <input type="text" placeholder="value" class="input input-bordered w-full" />
+          </div>
+        </div>
+        <div>
+          <label class="label label-text">Error Message</label>
+          <input type="text" placeholder="Pesan error yang ditampilkan" class="input input-bordered w-full" />
+        </div>
+        <div>
+          <label class="label label-text">Action</label>
+          <select class="select select-bordered w-full">
+            <option>Reject</option>
+            <option>Warn</option>
+            <option>Auto-correct</option>
+            <option>Send to Review</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-action">
+        <button class="btn btn-ghost" onclick="closeRuleModal()">Batal</button>
+        <button class="btn btn-ghost">Simpan sebagai Draft</button>
+        <button class="btn btn-primary" onclick="closeRuleModal()">Simpan & Aktifkan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('[role="tab"]').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.getAttribute('data-tab');
+        document.querySelectorAll('[role="tab"]').forEach((t) => t.classList.remove('tab-active'));
+        tab.classList.add('tab-active');
+        document.querySelectorAll('[id^="tab-"]').forEach((p) => p.classList.add('hidden'));
+        document.getElementById(`tab-${target}`).classList.remove('hidden');
+      });
+    });
+
+    function openRuleModal() {
+      document.getElementById('ruleModal').classList.add('modal-open');
+    }
+    function closeRuleModal() {
+      document.getElementById('ruleModal').classList.remove('modal-open');
+    }
+  </script>
+</body>
+</html>

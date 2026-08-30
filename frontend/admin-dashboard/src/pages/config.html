@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuration - MDM Admin</title>
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="configPage()">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold">System Configuration</h1>
+      <p class="text-sm text-gray-500">Manage global system settings, business rules, and integrations</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed mb-6 bg-base-100 shadow-md">
+      <a class="tab" :class="activeTab === 'system' ? 'tab-active' : ''" @click="activeTab = 'system'">System</a>
+      <a class="tab" :class="activeTab === 'matching' ? 'tab-active' : ''" @click="activeTab = 'matching'">Matching</a>
+      <a class="tab" :class="activeTab === 'sources' ? 'tab-active' : ''" @click="activeTab = 'sources'">Source Systems</a>
+      <a class="tab" :class="activeTab === 'rules' ? 'tab-active' : ''" @click="activeTab = 'rules'">Business Rules</a>
+      <a class="tab" :class="activeTab === 'notifications' ? 'tab-active' : ''" @click="activeTab = 'notifications'">Notifications</a>
+    </div>
+
+    <!-- Tab Content -->
+    <div x-show="activeTab === 'system'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">System Configuration</h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label class="form-label">CIF Number Prefix</label>
+            <input type="text" class="form-input" value="CIF" />
+          </div>
+          <div>
+            <label class="form-label">CIF Number Format</label>
+            <input type="text" class="form-input" value="CIF-{{year}}-{{sequence:08d}}" />
+          </div>
+          <div>
+            <label class="form-label">KYC Validity (years)</label>
+            <input type="number" class="form-input" value="5" />
+          </div>
+          <div>
+            <label class="form-label">Enhanced KYC Validity (years)</label>
+            <input type="number" class="form-input" value="2" />
+          </div>
+          <div>
+            <label class="form-label">Session Timeout (minutes)</label>
+            <input type="number" class="form-input" value="15" />
+          </div>
+          <div>
+            <label class="form-label">Password Min Length</label>
+            <input type="number" class="form-input" value="12" />
+          </div>
+          <div>
+            <label class="form-label">Max Failed Login Attempts</label>
+            <input type="number" class="form-input" value="5" />
+          </div>
+          <div>
+            <label class="form-label">Lockout Duration (minutes)</label>
+            <input type="number" class="form-input" value="15" />
+          </div>
+        </div>
+        <div class="card-actions justify-end mt-4">
+          <button class="btn btn-ghost">Reset</button>
+          <button class="btn btn-primary" @click="saveConfig()">Save Configuration</button>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="activeTab === 'matching'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Matching Engine Configuration</h3>
+        <p class="text-sm text-gray-500 mb-4">Configure matching algorithm thresholds and weights</p>
+        <div class="space-y-4">
+          <div>
+            <label class="form-label">Default Match Threshold</label>
+            <input type="range" min="0" max="1" step="0.01" value="0.85" class="range range-primary" />
+            <div class="flex justify-between text-xs"><span>0.0</span><span>0.85</span><span>1.0</span></div>
+          </div>
+          <div>
+            <label class="form-label">Auto-Merge Threshold</label>
+            <input type="range" min="0" max="1" step="0.01" value="0.95" class="range range-success" />
+            <div class="flex justify-between text-xs"><span>0.0</span><span>0.95</span><span>1.0</span></div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">Field: Full Name (weight)</label>
+              <input type="number" class="form-input" value="0.40" step="0.05" min="0" max="1" />
+            </div>
+            <div>
+              <label class="form-label">Field: NIK (weight)</label>
+              <input type="number" class="form-input" value="0.30" step="0.05" min="0" max="1" />
+            </div>
+            <div>
+              <label class="form-label">Field: Date of Birth (weight)</label>
+              <input type="number" class="form-input" value="0.15" step="0.05" min="0" max="1" />
+            </div>
+            <div>
+              <label class="form-label">Field: Phone (weight)</label>
+              <input type="number" class="form-input" value="0.15" step="0.05" min="0" max="1" />
+            </div>
+          </div>
+        </div>
+        <div class="card-actions justify-end mt-4">
+          <button class="btn btn-primary" @click="saveConfig()">Save Configuration</button>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="activeTab === 'sources'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Source System Integrations</h3>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Source System</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Last Sync</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>T24 Core Banking</td><td>DATABASE</td><td><span class="badge badge-success">ACTIVE</span></td><td>2 min ago</td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td>LOS Loan Origination</td><td>REST_API</td><td><span class="badge badge-success">ACTIVE</span></td><td>5 min ago</td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td>CMS Card Management</td><td>REST_API</td><td><span class="badge badge-success">ACTIVE</span></td><td>10 min ago</td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td>Mobile Banking</td><td>KAFKA</td><td><span class="badge badge-success">ACTIVE</span></td><td>1 min ago</td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td>Internet Banking</td><td>KAFKA</td><td><span class="badge badge-success">ACTIVE</span></td><td>1 min ago</td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td>BI Reporting</td><td>FILE (SFTP)</td><td><span class="badge badge-warning">DEGRADED</span></td><td>2 hours ago</td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="activeTab === 'rules'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Business Rules (8 active)</h3>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr><th>Code</th><th>Name</th><th>Type</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="font-mono text-xs">NIK_LENGTH_CHECK</td><td>NIK must be 16 digits</td><td>VALIDATION</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">EMAIL_FORMAT_CHECK</td><td>Email format validation</td><td>VALIDATION</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">PHONE_FORMAT_CHECK</td><td>Indonesian phone format</td><td>VALIDATION</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">MIN_AGE_CHECK</td><td>Minimum age 17</td><td>VALIDATION</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">HIGH_RISK_KYC</td><td>HIGH risk needs enhanced KYC</td><td>ROUTING</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">PEP_APPROVAL</td><td>PEP needs compliance approval</td><td>APPROVAL</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">CIF_AUTO_GEN</td><td>Auto-generate CIF number</td><td>TRANSFORMATION</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+              <tr><td class="font-mono text-xs">BLACKLIST_CHECK</td><td>Blacklist check on save</td><td>VALIDATION</td><td><span class="badge badge-success">ACTIVE</span></td><td><button class="btn btn-xs btn-ghost">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="activeTab === 'notifications'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Notification Templates (6 active)</h3>
+        <p class="text-sm text-gray-500 mb-4">Email, SMS, WhatsApp templates in Bahasa Indonesia</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-md border border-base-300 p-4">
+            <h4 class="font-semibold">WELCOME_EMAIL</h4>
+            <p class="text-xs text-gray-500">Selamat Datang di Bank XYZ</p>
+            <div class="mt-2 flex gap-2">
+              <span class="badge badge-info badge-sm">EMAIL</span>
+              <span class="badge badge-ghost badge-sm">id</span>
+              <span class="badge badge-success badge-sm">v1</span>
+            </div>
+          </div>
+          <div class="rounded-md border border-base-300 p-4">
+            <h4 class="font-semibold">KYC_REMINDER</h4>
+            <p class="text-xs text-gray-500">Pengingat KYC</p>
+            <div class="mt-2 flex gap-2">
+              <span class="badge badge-info badge-sm">EMAIL</span>
+              <span class="badge badge-ghost badge-sm">id</span>
+              <span class="badge badge-success badge-sm">v1</span>
+            </div>
+          </div>
+          <div class="rounded-md border border-base-300 p-4">
+            <h4 class="font-semibold">OTP_SMS</h4>
+            <p class="text-xs text-gray-500">Kode OTP via SMS</p>
+            <div class="mt-2 flex gap-2">
+              <span class="badge badge-warning badge-sm">SMS</span>
+              <span class="badge badge-ghost badge-sm">id</span>
+              <span class="badge badge-success badge-sm">v1</span>
+            </div>
+          </div>
+          <div class="rounded-md border border-base-300 p-4">
+            <h4 class="font-semibold">TXN_ALERT</h4>
+            <p class="text-xs text-gray-500">Notifikasi transaksi</p>
+            <div class="mt-2 flex gap-2">
+              <span class="badge badge-warning badge-sm">SMS</span>
+              <span class="badge badge-ghost badge-sm">id</span>
+              <span class="badge badge-success badge-sm">v1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function configPage() {
+        return {
+          activeTab: 'system',
+
+          async saveConfig() {
+            // TODO: Save to backend
+            console.log('Saving configuration...');
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Configuration saved successfully', type: 'success' } }));
+          },
+        };
+      }
+
+      window.configPage = configPage;
+    </script>
+  </body>
+</html>

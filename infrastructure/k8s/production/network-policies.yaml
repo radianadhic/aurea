@@ -1,0 +1,95 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: mdm-prod
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: mdm-prod
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus
+  namespace: mdm-prod
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - port: 8080
+        - port: 8082
+        - port: 8083
+        - port: 8084
+        - port: 8085
+        - port: 8086
+        - port: 8087
+        - port: 3000
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-cpu-mem-limit
+  namespace: mdm-prod
+spec:
+  limits:
+    - default:
+        cpu: 1
+        memory: 1Gi
+        ephemeral-storage: 5Gi
+      defaultRequest:
+        cpu: 200m
+        memory: 256Mi
+        ephemeral-storage: 1Gi
+      type: Container
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: mdm-prod-quota
+  namespace: mdm-prod
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: 200Gi
+    requests.ephemeral-storage: 1Ti
+    limits.cpu: "200"
+    limits.memory: 400Gi
+    persistentvolumeclaims: "50"
+    pods: "200"
+    services: "100"
+    secrets: "100"
+    configmaps: "100"

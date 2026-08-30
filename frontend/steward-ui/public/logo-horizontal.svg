@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" width="800" height="200">
+  <defs>
+    <linearGradient id="goldGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD764"/>
+      <stop offset="50%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </linearGradient>
+    <radialGradient id="innerGlow2" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFE5A0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#D4AF37" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Logo mark (left side) -->
+  <g transform="translate(20, 20)">
+    <circle cx="80" cy="80" r="75" fill="#0A1929"/>
+    <circle cx="80" cy="80" r="72" fill="url(#innerGlow2)"/>
+    <path d="M 80 25 L 130 135 L 112 135 L 100 110 L 60 110 L 48 135 L 30 135 Z"
+          fill="url(#goldGradient2)" stroke="#B8860B" stroke-width="1.2"/>
+    <path d="M 68 95 L 92 95 L 88 86 L 72 86 Z" fill="#0A1929" opacity="0.85"/>
+    <path d="M 80 25 L 86 36 L 74 36 Z" fill="#FFE5A0" opacity="0.7"/>
+    <circle cx="56" cy="120" r="2.5" fill="#FFD764" opacity="0.9"/>
+    <circle cx="80" cy="120" r="2.5" fill="#FFD764" opacity="0.9"/>
+    <circle cx="104" cy="120" r="2.5" fill="#FFD764" opacity="0.9"/>
+  </g>
+
+  <!-- Text: AUREA (right side) -->
+  <g transform="translate(200, 90)">
+    <text x="0" y="0"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="80"
+          font-weight="700"
+          fill="url(#goldGradient2)"
+          letter-spacing="6">AUREA</text>
+
+    <!-- Tagline -->
+    <text x="0" y="40"
+          font-family="Helvetica, Arial, sans-serif"
+          font-size="18"
+          font-weight="400"
+          fill="#0A1929"
+          letter-spacing="3">THE GOLD STANDARD OF DATA</text>
+  </g>
+</svg>

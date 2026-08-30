@@ -1,0 +1,80 @@
+"""OAuth2 / JWT security utilities for FastAPI."""
+from typing import Optional
+from fastapi import Depends, Header, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+from jwt import PyJWKClient
+import structlog
+
+from app.core.config import settings
+from app.core.exceptions import UnauthorizedException, ForbiddenException
+
+logger = structlog.get_logger(__name__)
+
+# JWT Bearer scheme
+security = HTTPBearer(auto_error=False)
+
+# Keycloak JWKS client (cached)
+_jwks_client: Optional[PyJWKClient] = None
+
+
+def get_jwks_client() -> PyJWKClient:
+    """Get or create JWKS client for Keycloak."""
+    global _jwks_client
+    if _jwks_client is None:
+        jwks_uri = f"{settings.keycloak_issuer_uri}/protocol/openid-connect/certs"
+        _jwks_client = PyJWKClient(jwks_uri, cache_keys=True)
+        logger.info("jwks_client_initialized", uri=jwks_uri)
+    return _jwks_client
+
+
+def decode_jwt(token: str) -> dict:
+    """Decode and verify JWT token."""
+    try:
+        jwks_client = get_jwks_client()
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+
+        claims = jwt.decode(
+            token,
+            signing_key.key,
+            algorithms=[settings.jwt_algorithm],
+            audience=settings.jwt_audience,
+            options={
+                "verify_signature": settings.jwt_verify_signature,
+                "verify_exp": settings.jwt_verify_exp,
+            },
+        )
+        return claims
+    except jwt.ExpiredSignatureError:
+        raise UnauthorizedException("Token has expired")
+    except jwt.InvalidTokenError as e:
+        raise UnauthorizedException(f"Invalid token: {str(e)}")
+    except Exception as e:
+        logger.error("jwt_decode_failed", error=str(e))
+        raise UnauthorizedException("Failed to decode token")
+
+
+async def get_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+) -> dict:
+    """Get current user from JWT token."""
+    if not credentials:
+        raise UnauthorizedException("Authentication required")
+
+    if credentials.scheme.lower() != "bearer":
+        raise UnauthorizedException("Invalid authentication scheme")
+
+    claims = decode_jwt(credentials.credentials)
+    return claims
+
+
+async def require_role(*required_roles: str):
+    """Dependency factory to require specific roles."""
+    async def role_checker(current_user: dict = Depends(get_current_user)) -> dict:
+        user_roles = current_user.get("realm_access", {}).get("roles", [])
+        if not any(role in user_roles for role in required_roles):
+            raise ForbiddenException(
+                f"Required role(s): {', '.join(required_roles)}. User has: {', '.join(user_roles)}"
+            )
+        return current_user
+    return role_checker

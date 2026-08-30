@@ -1,0 +1,177 @@
+spring:
+  application:
+    name: ${SERVICE_NAME}
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/mdm_${SERVICE_NAME}}
+    username: ${DB_USERNAME:mdm_user}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: Asia/Jakarta
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        format_sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SERVICE_NAME}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.bankxyz.mdm.*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/mdm-dev}
+          jwk-set-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/mdm-dev}/protocol/openid-connect/certs
+  cloud:
+    vault:
+      uri: ${VAULT_URI:http://localhost:8200}
+      token: ${VAULT_TOKEN:root}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: mdm/${SERVICE_NAME}
+
+server:
+  port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+  shutdown: graceful
+  forward-headers-strategy: framework
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    accept-count: 100
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,traces,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+      livenessstate:
+        enabled: true
+      readinessstate:
+        enabled: true
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
+    kafka:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.75, 0.95, 0.99
+    tags:
+      application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  packagesToScan: com.bankxyz.mdm
+  show-actuator: false
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:3002,http://localhost:3003}
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: "*"
+    max-age: 3600
+  pagination:
+    default-page-size: 20
+    max-page-size: 100
+  kafka:
+    topics:
+      audit-events: mdm.audit.events
+      customer-events: mdm.customer.events
+      notification-events: mdm.notification.events
+      workflow-events: mdm.workflow.events
+  security:
+    jwt:
+      user-id-claim: sub
+      username-claim: preferred_username
+      roles-claim: realm_access.roles
+      branch-id-claim: branch_id
+      employee-id-claim: employee_id
+  rate-limit:
+    enabled: true
+    standard-requests-per-minute: 60
+    admin-requests-per-minute: 300
+
+logging:
+  level:
+    root: INFO
+    com.bankxyz.mdm: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [traceId=%X{traceId:-},spanId=%X{spanId:-},userId=%X{userId:-},correlationId=%X{correlationId:-}] %logger{36} - %msg%n"
+  structured:
+    format:
+      console: ecs

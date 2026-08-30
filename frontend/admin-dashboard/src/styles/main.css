@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-base-200 text-base-content;
+  }
+  /* AUREA scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #0A1929; }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #D4AF37, #B8860B);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #FFD764; }
+}
+
+@layer components {
+  /* ========================================================== */
+  /* AUREA SPLASH SCREEN */
+  /* ========================================================== */
+  .aurea-splash-wrapper {
+    @apply fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden;
+    background: linear-gradient(135deg, #0A1929 0%, #1A2F47 100%);
+  }
+  .aurea-splash-bg {
+    @apply pointer-events-none absolute inset-0;
+  }
+  .aurea-particle {
+    @apply absolute bottom-[-20px] h-1 w-1 rounded-full bg-aurea-gold-500 opacity-0;
+    animation: aurea-particle-float 6s linear infinite;
+  }
+  @keyframes aurea-particle-float {
+    0% { opacity: 0; transform: translateY(0) translateX(0); }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-100vh) translateX(var(--drift, 30px)); }
+  }
+
+  .aurea-splash-content {
+    @apply relative z-[1] flex flex-col items-center text-white;
+  }
+  .aurea-splash-mark {
+    @apply relative mb-6 h-40 w-40;
+    animation: aurea-splash-mark-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+  }
+  @keyframes aurea-splash-mark-in {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .aurea-splash-circle {
+    @apply absolute inset-0 rounded-full border-2 border-aurea-navy-500;
+    background: linear-gradient(135deg, #1A2F47 0%, #0A1929 100%);
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+    animation: aurea-circle-pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes aurea-circle-pulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
+    50% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.5); }
+  }
+  .aurea-splash-a {
+    @apply absolute inset-0 flex items-center justify-center font-brand text-[80px] font-bold text-aurea-gold-500;
+    text-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+  }
+  .aurea-splash-dots {
+    @apply absolute bottom-[25px] left-1/2 flex -translate-x-1/2 gap-2;
+  }
+  .aurea-splash-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-aurea-gold-300;
+    box-shadow: 0 0 8px rgba(255, 215, 100, 0.8);
+    animation: aurea-dot-pulse 1.5s ease-in-out infinite;
+  }
+  .aurea-splash-dot:nth-child(2) { animation-delay: 0.2s; }
+  .aurea-splash-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes aurea-dot-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.4); opacity: 1; }
+  }
+
+  .aurea-splash-text {
+    @apply mb-0 ml-3 font-brand text-5xl font-bold;
+    background: linear-gradient(135deg, #FFD764 0%, #D4AF37 50%, #B8860B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 12px;
+    animation: aurea-text-reveal 1s ease-out 0.6s both;
+  }
+  @keyframes aurea-text-reveal {
+    0% { opacity: 0; letter-spacing: 30px; filter: blur(10px); }
+    100% { opacity: 1; letter-spacing: 12px; filter: blur(0); }
+  }
+  .aurea-splash-divider {
+    @apply mx-auto my-3.5 h-0.5;
+    background: linear-gradient(90deg, transparent 0%, #D4AF37 50%, transparent 100%);
+    width: 0;
+    animation: aurea-divider-expand 0.8s ease-out 1.2s forwards;
+  }
+  @keyframes aurea-divider-expand { 0% { width: 0; } 100% { width: 320px; } }
+
+  .aurea-splash-tagline {
+    @apply ml-1.5 text-xs text-aurea-navy-200;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 6px;
+    opacity: 0;
+    animation: aurea-tagline-fade 1s ease-out 1.5s forwards;
+  }
+  @keyframes aurea-tagline-fade {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .aurea-splash-loader {
+    @apply relative mt-8 h-0.5 w-44 overflow-hidden rounded;
+    background: rgba(212, 175, 55, 0.2);
+    opacity: 0;
+    animation: aurea-loader-show 0.3s ease-out 2s forwards;
+  }
+  @keyframes aurea-loader-show { to { opacity: 1; } }
+  .aurea-splash-loader::before {
+    content: '';
+    @apply absolute left-[-50%] top-0 h-full w-1/2 rounded;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+    animation: aurea-loader-slide 1.8s ease-in-out infinite;
+  }
+  @keyframes aurea-loader-slide {
+    0% { left: -50%; } 100% { left: 100%; }
+  }
+  .aurea-splash-version {
+    @apply absolute -bottom-32 font-mono text-[10px] text-aurea-navy-300;
+    letter-spacing: 2px;
+    opacity: 0;
+    animation: aurea-version-show 1s ease-out 2s forwards;
+  }
+  @keyframes aurea-version-show { to { opacity: 0.7; } }
+
+  /* ========================================================== */
+  /* AUREA MD3G DOTS SPINNER */
+  /* ========================================================== */
+  .aurea-dots {
+    @apply inline-flex gap-2.5;
+  }
+  .aurea-dot {
+    @apply h-3.5 w-3.5 rounded-full bg-aurea-gold-500;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
+    animation: aurea-dot-bounce 1.4s ease-in-out infinite;
+  }
+  .aurea-dot:nth-child(2) { animation-delay: 0.2s; }
+  .aurea-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes aurea-dot-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1.2); opacity: 1; }
+  }
+
+  /* ========================================================== */
+  /* AUREA GOLD RING SPINNER */
+  /* ========================================================== */
+  .aurea-ring {
+    @apply h-10 w-10 rounded-full;
+    border: 3px solid rgba(212, 175, 55, 0.15);
+    border-top-color: #D4AF37;
+    border-right-color: #FFD764;
+    animation: aurea-spin 0.9s linear infinite;
+  }
+  @keyframes aurea-spin { to { transform: rotate(360deg); } }
+
+  /* ========================================================== */
+  /* AUREA PROGRESS BAR (indeterminate) */
+  /* ========================================================== */
+  .aurea-progress {
+    @apply relative h-0.5 w-60 overflow-hidden rounded;
+    background: rgba(212, 175, 55, 0.2);
+  }
+  .aurea-progress::before {
+    content: '';
+    @apply absolute left-[-40%] top-0 h-full w-2/5 rounded;
+    background: linear-gradient(90deg, transparent, #FFD764, #D4AF37, transparent);
+    animation: aurea-bar 1.5s ease-in-out infinite;
+  }
+  @keyframes aurea-bar { 0% { left: -40%; } 100% { left: 100%; } }
+
+  /* ========================================================== */
+  /* AUREA BRAND GRADIENT TEXT */
+  /* ========================================================== */
+  .aurea-text-gradient {
+    background: linear-gradient(135deg, #FFD764 0%, #D4AF37 50%, #B8860B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .aurea-bg-gradient {
+    background: linear-gradient(135deg, #FFD764 0%, #D4AF37 50%, #B8860B 100%);
+  }
+
+  /* ========================================================== */
+  /* AUREA BUTTON */
+  /* ========================================================== */
+  .aurea-btn {
+    @apply inline-flex items-center gap-2 rounded-md bg-aurea-gold-500 px-4 py-2 text-sm font-semibold text-aurea-navy-600 transition-all hover:bg-aurea-gold-600 hover:shadow-lg;
+  }
+  .aurea-btn:hover {
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+  }
+  .aurea-btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-md border border-aurea-gold-500 px-4 py-2 text-sm font-semibold text-aurea-gold-700 transition-all hover:bg-aurea-gold-500/10;
+  }
+
+  /* ========================================================== */
+  /* CARDS */
+  /* ========================================================== */
+  .card-stat {
+    @apply rounded-lg bg-base-100 p-6 shadow-md transition-all hover:shadow-xl;
+    border-top: 3px solid transparent;
+  }
+  .card-stat:hover {
+    border-top-color: #D4AF37;
+  }
+  .stat-value {
+    @apply font-brand text-3xl font-bold text-aurea-gold-700;
+  }
+  .stat-label {
+    @apply text-xs font-medium uppercase tracking-wider text-gray-500;
+  }
+  .stat-trend-up { @apply text-success; }
+  .stat-trend-down { @apply text-error; }
+
+  /* ========================================================== */
+  /* NAVIGATION */
+  /* ========================================================== */
+  .nav-link {
+    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/80 transition-all hover:bg-aurea-navy-500 hover:text-aurea-gold-300;
+  }
+  .nav-link.active {
+    @apply bg-aurea-gold-500 text-aurea-navy-600 shadow-md;
+  }
+  .nav-link svg { @apply flex-shrink-0; }
+
+  /* ========================================================== */
+  /* BUTTONS */
+  /* ========================================================== */
+  .btn { @apply inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors; }
+  .btn-primary { @apply aurea-btn; }
+  .btn-secondary { @apply bg-aurea-navy-500 text-white hover:bg-aurea-navy-600; }
+  .btn-ghost { @apply text-white/80 hover:bg-aurea-navy-500; }
+  .btn-danger { @apply bg-error text-white hover:bg-error/90; }
+
+  /* ========================================================== */
+  /* TABLES */
+  /* ========================================================== */
+  .data-table { @apply w-full text-left text-sm; }
+  .data-table thead {
+    @apply border-b-2 border-aurea-gold-500/30 bg-aurea-navy-600 text-xs uppercase text-aurea-gold-300;
+  }
+  .data-table th { @apply px-4 py-3; }
+  .data-table td { @apply px-4 py-3; }
+  .data-table tbody tr {
+    @apply border-b border-base-300 transition-colors hover:bg-aurea-gold-500/5;
+  }
+
+  /* ========================================================== */
+  /* BADGES */
+  /* ========================================================== */
+  .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .badge-success { @apply bg-success/10 text-success; }
+  .badge-warning { @apply bg-warning/10 text-warning; }
+  .badge-error { @apply bg-error/10 text-error; }
+  .badge-info { @apply bg-info/10 text-info; }
+  .badge-gray { @apply bg-gray-200 text-gray-700; }
+  .badge-aurea { @apply bg-aurea-gold-500/15 text-aurea-gold-700; }
+
+  /* ========================================================== */
+  /* STATUS INDICATORS */
+  /* ========================================================== */
+  .status-dot { @apply inline-block h-2 w-2 rounded-full; }
+  .status-up { @apply bg-success; }
+  .status-down { @apply bg-error; }
+  .status-warning { @apply bg-warning; }
+  .status-aurea {
+    @apply h-2 w-2 rounded-full bg-aurea-gold-500;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+  }
+
+  /* ========================================================== */
+  /* FORMS */
+  /* ========================================================== */
+  .form-input {
+    @apply w-full rounded-md border border-base-300 bg-base-100 px-3 py-2 text-sm focus:border-aurea-gold-500 focus:outline-none focus:ring-1 focus:ring-aurea-gold-500;
+  }
+  .form-label { @apply mb-1 block text-sm font-medium text-gray-700; }
+
+  /* ========================================================== */
+  /* LOADING SPINNERS */
+  /* ========================================================== */
+  .htmx-indicator {
+    @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-aurea-gold-500 border-t-transparent;
+  }
+
+  /* ========================================================== */
+  /* TOAST NOTIFICATIONS */
+  /* ========================================================== */
+  .toast-container { @apply fixed right-4 top-4 z-50 flex flex-col gap-2; }
+  .toast { @apply rounded-md p-4 shadow-lg; }
+  .toast-success { @apply bg-success text-white; }
+  .toast-error { @apply bg-error text-white; }
+  .toast-warning { @apply bg-warning text-white; }
+  .toast-info { @apply bg-info text-white; }
+  .toast-aurea {
+    background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+    @apply text-aurea-navy-600 font-semibold;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin { scrollbar-width: thin; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply rounded-full bg-gray-300; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }
+}

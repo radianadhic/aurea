@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AUREA — Page Transitions</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0A1929;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* === Main container (simulates the SPA) === */
+  .app {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* === Page styles === */
+  .page {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.6s cubic-bezier(0.65, 0, 0.35, 1),
+                opacity 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .page.active {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  .page.exit-left {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  .page.exit-right {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  .page.enter-right {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  .page.enter-left {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  /* === Page 1: Splash === */
+  .page-splash {
+    background: linear-gradient(135deg, #0A1929 0%, #1A2F47 100%);
+    flex-direction: column;
+  }
+  .page-splash .logo {
+    width: 100px; height: 100px;
+    background: linear-gradient(135deg, #1A2F47 0%, #0A1929 100%);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+    margin-bottom: 20px;
+  }
+  .page-splash .logo::before {
+    content: 'A';
+    font-family: Georgia, serif;
+    font-size: 50px; font-weight: 700;
+    color: #D4AF37;
+  }
+  .page-splash h1 {
+    font-family: Georgia, serif;
+    font-size: 40px;
+    background: linear-gradient(135deg, #FFD764, #D4AF37, #B8860B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 8px;
+  }
+
+  /* === Page 2: Dashboard === */
+  .page-dashboard {
+    background: linear-gradient(135deg, #1A2F47 0%, #0A1929 100%);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px;
+  }
+  .dash-header {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(212,175,55,0.2);
+  }
+  .dash-logo {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #1A2F47 0%, #0A1929 100%);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  .dash-logo::before {
+    content: 'A';
+    font-family: Georgia, serif;
+    font-size: 20px; font-weight: 700;
+    color: #D4AF37;
+  }
+  .dash-title {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    color: #D4AF37;
+    letter-spacing: 4px;
+  }
+  .dash-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .dash-card {
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .dash-card h3 {
+    color: #FFD764;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .dash-card .value {
+    color: #D4AF37;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: Georgia, serif;
+  }
+  .dash-card .label {
+    color: #8FA5BD;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* === Page 3: Customers === */
+  .page-customers {
+    background: linear-gradient(135deg, #0A1929 0%, #1A2F47 100%);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px;
+  }
+  .cust-list { margin-top: 20px; }
+  .cust-item {
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cust-avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #D4AF37, #B8860B);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #0A1929;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .cust-info h4 { color: #FFD764; font-size: 14px; }
+  .cust-info p { color: #8FA5BD; font-size: 11px; }
+
+  /* === Page 4: Settings === */
+  .page-settings {
+    background: linear-gradient(135deg, #1A2F47 0%, #0A1929 100%);
+    flex-direction: column;
+    align-items: stretch;
+    padding: 30px;
+  }
+  .setting-group {
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .setting-group h4 { color: #FFD764; font-size: 13px; margin-bottom: 8px; }
+  .setting-group p { color: #8FA5BD; font-size: 11px; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: #D4AF37;
+    border-radius: 11px;
+    position: relative;
+    margin-top: 6px;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; right: 2px;
+    width: 18px; height: 18px;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* === Navigation === */
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    padding: 8px;
+    border-radius: 50px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    z-index: 100;
+  }
+  .nav-btn {
+    background: transparent;
+    border: none;
+    color: #8FA5BD;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s;
+  }
+  .nav-btn:hover { color: #D4AF37; background: rgba(212, 175, 55, 0.1); }
+  .nav-btn.active {
+    color: #0A1929;
+    background: #D4AF37;
+  }
+
+  /* === Transition overlay (gold flash) === */
+  .transition-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #D4AF37, #FFD764);
+    transform: translateX(-100%);
+    pointer-events: none;
+    z-index: 99;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .transition-overlay.active {
+    animation: goldSweep 0.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  }
+  @keyframes goldSweep {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+  }
+  .transition-overlay .big-a {
+    font-family: Georgia, serif;
+    font-size: 120px;
+    color: #0A1929;
+    font-weight: 700;
+    opacity: 0;
+    animation: bigAFade 0.6s ease-in-out 0.3s forwards;
+  }
+  @keyframes bigAFade {
+    0% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1.5); }
+  }
+
+  /* === Page indicator === */
+  .page-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: #8FA5BD;
+    font-size: 12px;
+    letter-spacing: 2px;
+    z-index: 100;
+  }
+  .page-indicator .current {
+    color: #D4AF37;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Page 1: Splash -->
+  <div class="page page-splash active" id="page-1">
+    <div class="logo"></div>
+    <h1>AUREA</h1>
+    <p style="color: #8FA5BD; letter-spacing: 4px; font-size: 12px; margin-top: 12px;">THE GOLD STANDARD OF DATA</p>
+  </div>
+
+  <!-- Page 2: Dashboard -->
+  <div class="page page-dashboard enter-right" id="page-2">
+    <div class="dash-header">
+      <div class="dash-logo"></div>
+      <div>
+        <div class="dash-title">AUREA</div>
+        <div style="color: #8FA5BD; font-size: 11px; letter-spacing: 2px;">DASHBOARD</div>
+      </div>
+    </div>
+    <div class="dash-cards">
+      <div class="dash-card">
+        <div class="label">Golden Customers</div>
+        <div class="value">12,847</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">Golden Accounts</div>
+        <div class="value">28,193</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">Golden Products</div>
+        <div class="value">1,452</div>
+      </div>
+      <div class="dash-card">
+        <div class="label">Data Quality</div>
+        <div class="value">98.7%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page 3: Customers -->
+  <div class="page page-customers enter-right" id="page-3">
+    <div class="dash-header">
+      <div class="dash-logo"></div>
+      <div>
+        <div class="dash-title">AUREA 360</div>
+        <div style="color: #8FA5BD; font-size: 11px; letter-spacing: 2px;">CUSTOMER VIEW</div>
+      </div>
+    </div>
+    <div class="cust-list">
+      <div class="cust-item">
+        <div class="cust-avatar">BS</div>
+        <div class="cust-info">
+          <h4>Budi Santoso</h4>
+          <p>ID: GC-2024-001 · Premium Customer · 8 years</p>
+        </div>
+      </div>
+      <div class="cust-item">
+        <div class="cust-avatar">SW</div>
+        <div class="cust-info">
+          <h4>Siti Wahyuni</h4>
+          <p>ID: GC-2024-002 · Priority Banking · 5 years</p>
+        </div>
+      </div>
+      <div class="cust-item">
+        <div class="cust-avatar">AR</div>
+        <div class="cust-info">
+          <h4>Ahmad Rizki</h4>
+          <p>ID: GC-2024-003 · Mass Affluent · 3 years</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page 4: Settings -->
+  <div class="page page-settings enter-right" id="page-4">
+    <div class="dash-header">
+      <div class="dash-logo"></div>
+      <div>
+        <div class="dash-title">AUREA Console</div>
+        <div style="color: #8FA5BD; font-size: 11px; letter-spacing: 2px;">SETTINGS</div>
+      </div>
+    </div>
+    <div class="setting-group">
+      <h4>🌙 Dark Mode</h4>
+      <p>Use dark theme across all AUREA apps</p>
+      <div class="toggle"></div>
+    </div>
+    <div class="setting-group">
+      <h4>🔔 Notifications</h4>
+      <p>Get alerts for data quality issues</p>
+      <div class="toggle"></div>
+    </div>
+    <div class="setting-group">
+      <h4>⚡ Auto-refresh</h4>
+      <p>Refresh dashboard every 30 seconds</p>
+      <div class="toggle"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Transition overlay -->
+<div class="transition-overlay" id="transitionOverlay">
+  <div class="big-a">A</div>
+</div>
+
+<!-- Page indicator -->
+<div class="page-indicator">
+  PAGE <span class="current" id="pageNum">1</span> / 4
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <button class="nav-btn active" data-page="1">🏠</button>
+  <button class="nav-btn" data-page="2">📊</button>
+  <button class="nav-btn" data-page="3">👥</button>
+  <button class="nav-btn" data-page="4">⚙️</button>
+</div>
+
+<script>
+  const pages = document.querySelectorAll('.page');
+  const navBtns = document.querySelectorAll('.nav-btn');
+  const overlay = document.getElementById('transitionOverlay');
+  const pageNumEl = document.getElementById('pageNum');
+
+  let currentPage = 1;
+  let isTransitioning = false;
+
+  function navigateTo(targetPage) {
+    if (targetPage === currentPage || isTransitioning) return;
+    isTransitioning = true;
+
+    const direction = targetPage > currentPage ? 'left' : 'right';
+    const currentEl = document.getElementById('page-' + currentPage);
+    const targetEl = document.getElementById('page-' + targetPage);
+
+    // Update nav buttons
+    navBtns.forEach(btn => {
+      btn.classList.toggle('active', parseInt(btn.dataset.page) === targetPage);
+    });
+
+    // Animate current page out
+    if (direction === 'left') {
+      currentEl.classList.remove('active');
+      currentEl.classList.add('exit-left');
+      targetEl.classList.remove('enter-left', 'enter-right');
+      targetEl.classList.add('active');
+    } else {
+      currentEl.classList.remove('active');
+      currentEl.classList.add('exit-right');
+      targetEl.classList.remove('enter-left', 'enter-right');
+      targetEl.classList.add('active');
+    }
+
+    // Gold sweep overlay
+    overlay.classList.remove('active');
+    void overlay.offsetWidth; // force reflow
+    overlay.classList.add('active');
+
+    setTimeout(() => {
+      currentEl.classList.remove('exit-left', 'exit-right');
+      currentEl.classList.add(direction === 'left' ? 'enter-right' : 'enter-left');
+      isTransitioning = false;
+    }, 600);
+
+    currentPage = targetPage;
+    pageNumEl.textContent = targetPage;
+  }
+
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => navigateTo(parseInt(btn.dataset.page)));
+  });
+
+  // Keyboard nav
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' && currentPage < 4) navigateTo(currentPage + 1);
+    if (e.key === 'ArrowLeft' && currentPage > 1) navigateTo(currentPage - 1);
+  });
+</script>
+
+</body>
+</html>

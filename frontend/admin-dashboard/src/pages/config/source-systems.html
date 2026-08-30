@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Source Systems - MDM Admin</title>
+    <link rel="stylesheet" href="../../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="sourceSystemsPage()" x-init="init()">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Source System Integrations</h1>
+        <p class="text-sm text-gray-500">Configure connections to 20+ source systems (CBS, LOS, CMS, Mobile, dll)</p>
+      </div>
+      <button @click="addSourceSystem()" class="btn btn-primary">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Source System
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div class="card-stat">
+        <p class="stat-label">Total Sources</p>
+        <p class="stat-value" x-text="sources.length"></p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Active</p>
+        <p class="stat-value text-success" x-text="activeCount"></p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Degraded</p>
+        <p class="stat-value text-warning" x-text="degradedCount"></p>
+      </div>
+      <div class="card-stat">
+        <p class="stat-label">Failed</p>
+        <p class="stat-value text-error" x-text="failedCount"></p>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="flex flex-wrap items-center gap-2">
+          <input type="text" placeholder="Search by name..." class="form-input flex-1" x-model="search" @input="filter()" />
+          <select class="form-input" x-model="filterType" @change="filter()">
+            <option value="">All Types</option>
+            <option value="DATABASE">Database</option>
+            <option value="REST_API">REST API</option>
+            <option value="SOAP">SOAP</option>
+            <option value="KAFKA">Kafka</option>
+            <option value="SFTP">SFTP</option>
+            <option value="WEBHOOK">Webhook</option>
+          </select>
+          <select class="form-input" x-model="filterStatus" @change="filter()">
+            <option value="">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="DEGRADED">Degraded</option>
+            <option value="FAILED">Failed</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Source Systems Table -->
+    <div class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Sync Mode</th>
+                <th>Status</th>
+                <th>Last Sync</th>
+                <th>Records Today</th>
+                <th>Error Rate</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="src in filteredSources" :key="src.id">
+                <tr>
+                  <td class="font-mono text-xs" x-text="src.code"></td>
+                  <td x-text="src.name"></td>
+                  <td><span class="badge badge-sm" x-text="src.type"></span></td>
+                  <td x-text="src.syncMode"></td>
+                  <td>
+                    <span class="badge badge-sm" :class="statusClass(src.status)" x-text="src.status"></span>
+                  </td>
+                  <td class="text-xs" x-text="src.lastSync"></td>
+                  <td x-text="src.recordsToday.toLocaleString()"></td>
+                  <td class="text-xs" :class="src.errorRate > 1 ? 'text-error' : 'text-success'" x-text="src.errorRate + '%'"></td>
+                  <td>
+                    <button @click="testConnection(src)" class="btn btn-xs btn-ghost">Test</button>
+                    <button @click="editSource(src)" class="btn btn-xs btn-primary">Edit</button>
+                    <button @click="toggleSource(src)" class="btn btn-xs" :class="src.status === 'ACTIVE' ? 'btn-error' : 'btn-success'" x-text="src.status === 'ACTIVE' ? 'Stop' : 'Start'"></button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <dialog x-ref="editModal" class="modal">
+      <div class="modal-box max-w-2xl">
+        <h3 class="text-lg font-bold mb-4" x-text="editingSource ? 'Edit Source System' : 'Add Source System'"></h3>
+        <form @submit.prevent="saveSource()">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label class="form-label">Code *</label>
+              <input type="text" class="form-input" x-model="editForm.code" required />
+            </div>
+            <div>
+              <label class="form-label">Name *</label>
+              <input type="text" class="form-input" x-model="editForm.name" required />
+            </div>
+            <div>
+              <label class="form-label">Type *</label>
+              <select class="form-input" x-model="editForm.type" required>
+                <option value="DATABASE">Database</option>
+                <option value="REST_API">REST API</option>
+                <option value="SOAP">SOAP</option>
+                <option value="KAFKA">Kafka</option>
+                <option value="SFTP">SFTP</option>
+                <option value="WEBHOOK">Webhook</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Sync Mode</label>
+              <select class="form-input" x-model="editForm.syncMode">
+                <option value="REAL_TIME">Real-time</option>
+                <option value="BATCH">Batch</option>
+                <option value="SCHEDULED">Scheduled</option>
+                <option value="EVENT_DRIVEN">Event-driven</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="form-label">Endpoint *</label>
+              <input type="text" class="form-input" x-model="editForm.endpoint" placeholder="jdbc:oracle:thin:@host:1521/SID or https://api.example.com" required />
+            </div>
+            <div>
+              <label class="form-label">Username</label>
+              <input type="text" class="form-input" x-model="editForm.username" />
+            </div>
+            <div>
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" x-model="editForm.password" />
+            </div>
+            <div>
+              <label class="form-label">Schedule (cron)</label>
+              <input type="text" class="form-input" x-model="editForm.schedule" placeholder="0 0 * * * ?" />
+            </div>
+            <div>
+              <label class="form-label">Status</label>
+              <select class="form-input" x-model="editForm.status">
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-action">
+            <button type="button" @click="closeEdit()" class="btn btn-ghost">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
+    <script type="module">
+      function sourceSystemsPage() {
+        return {
+          search: '',
+          filterType: '',
+          filterStatus: '',
+          editingSource: null,
+          editForm: {},
+          sources: [
+            { id: 1, code: 'T24_CBS', name: 'T24 Core Banking', type: 'DATABASE', syncMode: 'BATCH', status: 'ACTIVE', lastSync: '2 min ago', recordsToday: 12345, errorRate: 0.1 },
+            { id: 2, code: 'LOS_BSI', name: 'Loan Origination System', type: 'REST_API', syncMode: 'REAL_TIME', status: 'ACTIVE', lastSync: '5 min ago', recordsToday: 2345, errorRate: 0.2 },
+            { id: 3, code: 'CMS_FIS', name: 'Card Management System', type: 'REST_API', syncMode: 'BATCH', status: 'ACTIVE', lastSync: '10 min ago', recordsToday: 1234, errorRate: 0.05 },
+            { id: 4, code: 'MOBILE_KAFKA', name: 'Mobile Banking Events', type: 'KAFKA', syncMode: 'REAL_TIME', status: 'ACTIVE', lastSync: '< 1 min', recordsToday: 234567, errorRate: 0.01 },
+            { id: 5, code: 'IB_WEBHOOK', name: 'Internet Banking', type: 'WEBHOOK', syncMode: 'EVENT_DRIVEN', status: 'ACTIVE', lastSync: '1 min ago', recordsToday: 45678, errorRate: 0.02 },
+            { id: 6, code: 'BI_SFTP', name: 'BI Reporting (SFTP)', type: 'SFTP', syncMode: 'SCHEDULED', status: 'DEGRADED', lastSync: '2 hours ago', recordsToday: 0, errorRate: 5.2 },
+            { id: 7, code: 'PPATK_API', name: 'PPATK Integration', type: 'REST_API', syncMode: 'BATCH', status: 'ACTIVE', lastSync: '30 min ago', recordsToday: 56, errorRate: 0 },
+            { id: 8, code: 'OJK_SOAP', name: 'OJK Reporting', type: 'SOAP', syncMode: 'BATCH', status: 'ACTIVE', lastSync: '1 hour ago', recordsToday: 234, errorRate: 0.1 },
+            { id: 9, code: 'SLIK_BI', name: 'SLIK (BI)', type: 'REST_API', syncMode: 'BATCH', status: 'ACTIVE', lastSync: '45 min ago', recordsToday: 1234, errorRate: 0 },
+            { id: 10, code: 'ATM_SWITCH', name: 'ATM Switch', type: 'KAFKA', syncMode: 'REAL_TIME', status: 'FAILED', lastSync: '3 hours ago', recordsToday: 0, errorRate: 100 },
+            { id: 11, code: 'BRANCH_NET', name: 'Branch Network', type: 'REST_API', syncMode: 'REAL_TIME', status: 'ACTIVE', lastSync: '< 1 min', recordsToday: 3456, errorRate: 0.1 },
+            { id: 12, code: 'E_FORM', name: 'E-Form Digital', type: 'WEBHOOK', syncMode: 'EVENT_DRIVEN', status: 'ACTIVE', lastSync: '5 min ago', recordsToday: 567, errorRate: 0.5 },
+            { id: 13, code: 'CRM_SIEBEL', name: 'CRM (Siebel)', type: 'DATABASE', syncMode: 'BATCH', status: 'ACTIVE', lastSync: '15 min ago', recordsToday: 890, errorRate: 0.3 },
+            { id: 14, code: 'MARKETING_MC', name: 'Marketing Cloud', type: 'REST_API', syncMode: 'BATCH', status: 'INACTIVE', lastSync: '5 hours ago', recordsToday: 0, errorRate: 0 },
+          ],
+
+          get filteredSources() {
+            return this.sources.filter((s) => {
+              const matchSearch = !this.search || s.name.toLowerCase().includes(this.search.toLowerCase()) || s.code.toLowerCase().includes(this.search.toLowerCase());
+              const matchType = !this.filterType || s.type === this.filterType;
+              const matchStatus = !this.filterStatus || s.status === this.filterStatus;
+              return matchSearch && matchType && matchStatus;
+            });
+          },
+
+          get activeCount() { return this.sources.filter(s => s.status === 'ACTIVE').length; },
+          get degradedCount() { return this.sources.filter(s => s.status === 'DEGRADED').length; },
+          get failedCount() { return this.sources.filter(s => s.status === 'FAILED').length; },
+
+          async init() {},
+
+          statusClass(status) {
+            return {
+              'ACTIVE': 'badge-success',
+              'DEGRADED': 'badge-warning',
+              'FAILED': 'badge-error',
+              'INACTIVE': 'badge-gray',
+            }[status] || 'badge-gray';
+          },
+
+          filter() {},
+
+          addSourceSystem() {
+            this.editingSource = null;
+            this.editForm = { code: '', name: '', type: 'REST_API', syncMode: 'BATCH', endpoint: '', username: '', password: '', schedule: '', status: 'INACTIVE' };
+            this.$refs.editModal.showModal();
+          },
+
+          editSource(src) {
+            this.editingSource = src;
+            this.editForm = { ...src };
+            this.$refs.editModal.showModal();
+          },
+
+          closeEdit() {
+            this.$refs.editModal.close();
+          },
+
+          async saveSource() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Source system saved (demo)', type: 'success' } }));
+            this.closeEdit();
+          },
+
+          async testConnection(src) {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Testing connection to ${src.name}...`, type: 'info' } }));
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Connection to ${src.name}: SUCCESS (12ms)`, type: 'success' } }));
+            }, 1000);
+          },
+
+          async toggleSource(src) {
+            const newStatus = src.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+            src.status = newStatus;
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `${src.name} is now ${newStatus}`, type: 'success' } }));
+          },
+        };
+      }
+
+      window.sourceSystemsPage = sourceSystemsPage;
+    </script>
+  </body>
+</html>

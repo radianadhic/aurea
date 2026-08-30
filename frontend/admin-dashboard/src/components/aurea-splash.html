@@ -1,0 +1,273 @@
+<!--
+  AUREA Splash Screen Component
+  Usage:
+    <div x-data="aureaSplash()" x-show="visible" x-transition.opacity.duration.500ms>
+      <div class="aurea-splash-bg"></div>
+      <div class="aurea-splash-content">
+        <div class="aurea-splash-mark">A</div>
+        <h1 class="aurea-splash-text">AUREA</h1>
+        <div class="aurea-splash-divider"></div>
+        <p class="aurea-splash-tagline">THE GOLD STANDARD OF DATA</p>
+        <div class="aurea-splash-loader"></div>
+      </div>
+    </div>
+-->
+<div class="aurea-splash-wrapper" x-data="aureaSplashComponent()" x-show="visible"
+     x-transition:enter="transition ease-out duration-500"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-500"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0">
+
+  <div class="aurea-splash-bg">
+    <div class="aurea-particle" style="left: 10%; --drift: 30px;"></div>
+    <div class="aurea-particle" style="left: 25%; --drift: -20px; animation-delay: 1s;"></div>
+    <div class="aurea-particle" style="left: 40%; --drift: 40px; animation-delay: 2s;"></div>
+    <div class="aurea-particle" style="left: 55%; --drift: -30px; animation-delay: 0.5s;"></div>
+    <div class="aurea-particle" style="left: 70%; --drift: 25px; animation-delay: 1.5s;"></div>
+    <div class="aurea-particle" style="left: 85%; --drift: -40px; animation-delay: 2.5s;"></div>
+  </div>
+
+  <div class="aurea-splash-content">
+    <div class="aurea-splash-mark">
+      <div class="aurea-splash-circle"></div>
+      <div class="aurea-splash-a">A</div>
+      <div class="aurea-splash-dots">
+        <div class="aurea-splash-dot"></div>
+        <div class="aurea-splash-dot"></div>
+        <div class="aurea-splash-dot"></div>
+      </div>
+    </div>
+    <h1 class="aurea-splash-text">AUREA</h1>
+    <div class="aurea-splash-divider"></div>
+    <p class="aurea-splash-tagline" x-text="tagline"></p>
+    <div class="aurea-splash-loader"></div>
+    <p class="aurea-splash-version">v<span x-text="version"></span></p>
+  </div>
+</div>
+
+<script>
+function aureaSplashComponent() {
+  return {
+    visible: true,
+    tagline: 'THE GOLD STANDARD OF DATA',
+    version: '1.0.0',
+    autoHideMs: 3500,
+
+    init() {
+      const ds = this.$el.dataset;
+      if (ds.tagline) this.tagline = ds.tagline;
+      if (ds.version) this.version = ds.version;
+      if (ds.duration) this.autoHideMs = parseInt(ds.duration);
+
+      // Emit event when auto-hiding
+      if (this.autoHideMs > 0) {
+        setTimeout(() => {
+          this.visible = false;
+          this.$dispatch('aurea-splash-complete');
+        }, this.autoHideMs);
+      }
+    },
+
+    hide() {
+      this.visible = false;
+      this.$dispatch('aurea-splash-complete');
+    },
+
+    show() {
+      this.visible = true;
+    }
+  };
+}
+</script>
+
+<style>
+.aurea-splash-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0A1929 0%, #1A2F47 100%);
+  overflow: hidden;
+}
+
+.aurea-splash-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.aurea-particle {
+  position: absolute;
+  bottom: -20px;
+  width: 3px;
+  height: 3px;
+  background: #D4AF37;
+  border-radius: 50%;
+  opacity: 0;
+  animation: aurea-particle-float 6s linear infinite;
+}
+@keyframes aurea-particle-float {
+  0% { opacity: 0; transform: translateY(0) translateX(0); }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-100vh) translateX(var(--drift, 30px)); }
+}
+
+.aurea-splash-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+}
+
+.aurea-splash-mark {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 24px;
+  animation: aurea-splash-mark-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
+}
+@keyframes aurea-splash-mark-in {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.aurea-splash-circle {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #1A2F47 0%, #0A1929 100%);
+  border: 2px solid #1A2F47;
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(212, 175, 55, 0.3);
+  animation: aurea-circle-pulse 2.5s ease-in-out infinite;
+}
+@keyframes aurea-circle-pulse {
+  0%, 100% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
+  50% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.5); }
+}
+
+.aurea-splash-a {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 80px;
+  font-weight: 700;
+  color: #D4AF37;
+  text-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.aurea-splash-dots {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+.aurea-splash-dot {
+  width: 6px;
+  height: 6px;
+  background: #FFD764;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 215, 100, 0.8);
+  animation: aurea-dot-pulse 1.5s ease-in-out infinite;
+}
+.aurea-splash-dot:nth-child(2) { animation-delay: 0.2s; }
+.aurea-splash-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes aurea-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+.aurea-splash-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFD764 0%, #D4AF37 50%, #B8860B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 12px;
+  margin: 0 0 0 12px;
+  animation: aurea-text-reveal 1s ease-out 0.6s both;
+}
+@keyframes aurea-text-reveal {
+  0% { opacity: 0; letter-spacing: 30px; filter: blur(10px); }
+  100% { opacity: 1; letter-spacing: 12px; filter: blur(0); }
+}
+
+.aurea-splash-divider {
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #D4AF37 50%, transparent 100%);
+  margin: 14px 0;
+  animation: aurea-divider-expand 0.8s ease-out 1.2s forwards;
+}
+@keyframes aurea-divider-expand {
+  0% { width: 0; }
+  100% { width: 320px; }
+}
+
+.aurea-splash-tagline {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12px;
+  color: #8FA5BD;
+  letter-spacing: 6px;
+  margin: 0 0 0 6px;
+  opacity: 0;
+  animation: aurea-tagline-fade 1s ease-out 1.5s forwards;
+}
+@keyframes aurea-tagline-fade {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.aurea-splash-loader {
+  margin-top: 30px;
+  width: 180px;
+  height: 2px;
+  background: rgba(212, 175, 55, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  animation: aurea-loader-fade 0.3s ease-out 2s forwards;
+}
+@keyframes aurea-loader-fade { to { opacity: 1; } }
+.aurea-splash-loader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  border-radius: 2px;
+  animation: aurea-loader-slide 1.8s ease-in-out infinite;
+}
+@keyframes aurea-loader-slide {
+  0% { left: -50%; }
+  100% { left: 100%; }
+}
+
+.aurea-splash-version {
+  position: absolute;
+  bottom: -120px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #4A6580;
+  letter-spacing: 2px;
+  opacity: 0;
+  animation: aurea-version-fade 1s ease-out 2s forwards;
+}
+@keyframes aurea-version-fade { to { opacity: 0.7; } }
+</style>

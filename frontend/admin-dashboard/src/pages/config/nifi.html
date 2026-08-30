@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NiFi Configuration - MDM Admin</title>
+    <link rel="stylesheet" href="../../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="nifiConfigPage()" x-init="init()">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">NiFi Flow Configuration</h1>
+        <p class="text-sm text-gray-500">Manage Apache NiFi flows, connections, and variables</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-sm">Status:</span>
+        <span class="badge" :class="nifiStatus === 'RUNNING' ? 'badge-success' : 'badge-error'" x-text="nifiStatus"></span>
+        <button @click="openNiFiUI()" class="btn btn-primary btn-sm">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+          Open NiFi UI
+        </button>
+      </div>
+    </div>
+
+    <!-- NiFi Cluster Status -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Cluster Status</h3>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div>
+            <p class="text-sm text-gray-500">Nodes</p>
+            <p class="text-2xl font-bold">5/5</p>
+            <p class="text-xs text-success">All connected</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Process Groups</p>
+            <p class="text-2xl font-bold" x-text="processGroups.length"></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Active Processors</p>
+            <p class="text-2xl font-bold" x-text="activeProcessors"></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Backpressure</p>
+            <p class="text-2xl font-bold text-success">0%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-boxed mb-6 bg-base-100 shadow-md">
+      <a class="tab" :class="activeTab === 'flows' ? 'tab-active' : ''" @click="activeTab = 'flows'">Flows</a>
+      <a class="tab" :class="activeTab === 'processors' ? 'tab-active' : ''" @click="activeTab = 'processors'">Processors</a>
+      <a class="tab" :class="activeTab === 'connections' ? 'tab-active' : ''" @click="activeTab = 'connections'">Connections</a>
+      <a class="tab" :class="activeTab === 'variables' ? 'tab-active' : ''" @click="activeTab = 'variables'">Variables</a>
+      <a class="tab" :class="activeTab === 'controller-services' ? 'tab-active' : ''" @click="activeTab = 'controller-services'">Controller Services</a>
+    </div>
+
+    <!-- Flows Tab -->
+    <div x-show="activeTab === 'flows'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="card-title text-base">Process Groups (Flows)</h3>
+          <button @click="createFlow()" class="btn btn-primary btn-sm">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Flow
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Processors</th>
+                <th>Last Modified</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="flow in processGroups" :key="flow.id">
+                <tr>
+                  <td class="font-mono" x-text="flow.name"></td>
+                  <td class="text-sm" x-text="flow.description"></td>
+                  <td>
+                    <span class="badge badge-sm" :class="flow.status === 'RUNNING' ? 'badge-success' : flow.status === 'STOPPED' ? 'badge-warning' : 'badge-error'" x-text="flow.status"></span>
+                  </td>
+                  <td x-text="flow.processorCount"></td>
+                  <td class="text-xs" x-text="flow.lastModified"></td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">View</button>
+                    <button class="btn btn-xs btn-primary">Edit</button>
+                    <button class="btn btn-xs btn-error">Stop</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Processors Tab -->
+    <div x-show="activeTab === 'processors'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base mb-4">Processor Status</h3>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Processor</th>
+                <th>Type</th>
+                <th>Group</th>
+                <th>Status</th>
+                <th>Throughput</th>
+                <th>Error Count</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="proc in processors" :key="proc.id">
+                <tr>
+                  <td class="font-mono text-xs" x-text="proc.name"></td>
+                  <td class="text-xs" x-text="proc.type"></td>
+                  <td class="font-mono text-xs" x-text="proc.group"></td>
+                  <td>
+                    <span class="badge badge-sm" :class="proc.status === 'RUNNING' ? 'badge-success' : 'badge-warning'" x-text="proc.status"></span>
+                  </td>
+                  <td class="text-xs" x-text="proc.throughput + ' flowfiles/min'"></td>
+                  <td class="text-xs" :class="proc.errorCount > 0 ? 'text-error' : ''" x-text="proc.errorCount"></td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">View</button>
+                    <button class="btn btn-xs btn-warning">Stop</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variables Tab -->
+    <div x-show="activeTab === 'variables'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <div class="mb-4 flex items-center justify-between">
+          <h3 class="card-title text-base">NiFi Variables</h3>
+          <button @click="addVariable()" class="btn btn-primary btn-sm">+ Add Variable</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="data-table">
+            <thead>
+              <tr><th>Name</th><th>Value</th><th>Scope</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              <template x-for="v in variables" :key="v.name">
+                <tr>
+                  <td class="font-mono text-xs" x-text="v.name"></td>
+                  <td class="font-mono text-xs" x-text="v.value"></td>
+                  <td class="text-xs" x-text="v.scope"></td>
+                  <td>
+                    <button class="btn btn-xs btn-ghost">Edit</button>
+                    <button class="btn btn-xs btn-error">Delete</button>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="activeTab === 'connections'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base mb-4">Connections (Data Flow)</h3>
+        <p class="text-sm text-gray-500">Click "Open NiFi UI" untuk manage connections secara visual</p>
+        <div class="mt-4">
+          <p class="text-sm">Total active connections: <span class="font-bold" x-text="connections.length"></span></p>
+        </div>
+      </div>
+    </div>
+
+    <div x-show="activeTab === 'controller-services'" class="card bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base mb-4">Controller Services</h3>
+        <p class="text-sm text-gray-500">Database connection pools, SSL contexts, dan shared services</p>
+      </div>
+    </div>
+
+    <script type="module">
+      function nifiConfigPage() {
+        return {
+          nifiStatus: 'RUNNING',
+          activeTab: 'flows',
+          activeProcessors: 234,
+          processGroups: [
+            { id: 1, name: 'ingest-customer-cbs', description: 'Ingest CIF dari Core Banking System', status: 'RUNNING', processorCount: 12, lastModified: '2026-08-25 14:30' },
+            { id: 2, name: 'ingest-customer-los', description: 'Ingest CIF dari Loan Origination', status: 'RUNNING', processorCount: 8, lastModified: '2026-08-25 14:30' },
+            { id: 3, name: 'deduplication-flow', description: 'Customer matching & deduplication', status: 'RUNNING', processorCount: 15, lastModified: '2026-08-24 09:00' },
+            { id: 4, name: 'enrichment-flow', description: 'Data enrichment (geocoding, email validation)', status: 'RUNNING', processorCount: 18, lastModified: '2026-08-23 16:00' },
+            { id: 5, name: 'broadcast-flow', description: 'Broadcast customer events ke downstream', status: 'RUNNING', processorCount: 22, lastModified: '2026-08-22 11:00' },
+            { id: 6, name: 'data-quality-flow', description: 'Data quality scoring & anomaly detection', status: 'STOPPED', processorCount: 14, lastModified: '2026-08-20 10:00' },
+            { id: 7, name: 'archive-flow', description: 'Archive old records to cold storage', status: 'RUNNING', processorCount: 6, lastModified: '2026-08-19 14:00' },
+          ],
+          processors: [
+            { id: 1, name: 'QueryDatabaseTable-CBS', type: 'org.apache.nifi.processors.standard.QueryDatabaseTable', group: 'ingest-customer-cbs', status: 'RUNNING', throughput: 1234, errorCount: 0 },
+            { id: 2, name: 'ConvertRecordToJSON', type: 'org.apache.nifi.processors.standard.ConvertRecord', group: 'ingest-customer-cbs', status: 'RUNNING', throughput: 1234, errorCount: 0 },
+            { id: 3, name: 'PutKafkaTopic', type: 'org.apache.nifi.processors.kafka.pubsub.PutKafka', group: 'broadcast-flow', status: 'RUNNING', throughput: 5678, errorCount: 2 },
+            { id: 4, name: 'ValidateRecord', type: 'org.apache.nifi.processors.standard.ValidateRecord', group: 'enrichment-flow', status: 'RUNNING', throughput: 234, errorCount: 5 },
+            { id: 5, name: 'JoltTransformJSON', type: 'org.apache.nifi.processors.standard.JoltTransformJSON', group: 'enrichment-flow', status: 'RUNNING', throughput: 234, errorCount: 0 },
+            { id: 6, name: 'RouteOnAttribute', type: 'org.apache.nifi.processors.standard.RouteOnAttribute', group: 'deduplication-flow', status: 'RUNNING', throughput: 567, errorCount: 0 },
+          ],
+          connections: [
+            { id: 1, source: 'QueryDatabaseTable', dest: 'ConvertRecord', queueSize: 12 },
+            { id: 2, source: 'ConvertRecord', dest: 'PutKafkaTopic', queueSize: 0 },
+          ],
+          variables: [
+            { name: 'cbs.jdbc.url', value: 'jdbc:oracle:thin:@cbs-prod:1521/ORCL', scope: 'GLOBAL' },
+            { name: 'cbs.jdbc.user', value: '${vault:cbs_user}', scope: 'GLOBAL' },
+            { name: 'los.api.base', value: 'https://los.mdm.bankxyz.co.id/api/v1', scope: 'GLOBAL' },
+            { name: 'kafka.bootstrap', value: 'kafka.kafka-system:9092', scope: 'GLOBAL' },
+            { name: 'min.batch.size', value: '1000', scope: 'ingest-customer-cbs' },
+          ],
+
+          async init() {},
+
+          openNiFiUI() {
+            window.open('https://nifi.mdm.bankxyz.co.id/nifi/', '_blank');
+          },
+
+          createFlow() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Open NiFi UI untuk create flow', type: 'info' } }));
+          },
+
+          addVariable() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Add variable feature coming soon', type: 'info' } }));
+          },
+        };
+      }
+
+      window.nifiConfigPage = nifiConfigPage;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Report Builder - MDM Admin</title>
+    <link rel="stylesheet" href="../../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="reportBuilderPage()" x-init="init()">
+    <div class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Custom Report Builder</h1>
+        <p class="text-sm text-gray-500">Build ad-hoc reports dengan drag-and-drop. No code required.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button @click="previewReport()" class="btn btn-ghost">Preview</button>
+        <button @click="saveReport()" class="btn btn-primary">Save Report</button>
+        <button @click="exportReport()" class="btn btn-success">Export</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
+      <!-- Left: Data Sources -->
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-sm">📊 Data Sources</h3>
+          <div class="space-y-1">
+            <template x-for="ds in dataSources" :key="ds.name">
+              <div class="cursor-pointer rounded-md p-2 hover:bg-base-200" @click="selectDataSource(ds)">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium" x-text="ds.name"></span>
+                  <span class="badge badge-xs" x-text="ds.records + ' rec'"></span>
+                </div>
+                <p class="text-xs text-gray-500" x-text="ds.description"></p>
+              </div>
+            </template>
+          </div>
+
+          <div class="divider"></div>
+          <h4 class="text-sm font-semibold">📋 Available Fields</h4>
+          <div class="max-h-64 overflow-y-auto space-y-1 scrollbar-thin">
+            <template x-for="field in availableFields" :key="field.name">
+              <div class="cursor-grab rounded-md border border-base-300 bg-base-100 p-2 text-xs hover:bg-base-200" draggable="true"
+                   @dragstart="dragField(field, $event)">
+                <div class="flex items-center gap-2">
+                  <span x-text="iconFor(field.type)" class="text-base"></span>
+                  <span class="font-mono" x-text="field.name"></span>
+                </div>
+                <p class="text-xs text-gray-500" x-text="field.description"></p>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Report Designer -->
+      <div class="lg:col-span-2 card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-sm">🎨 Report Designer</h3>
+
+          <!-- Report Name -->
+          <div class="form-control">
+            <label class="form-label">Report Name</label>
+            <input type="text" class="form-input" x-model="report.name" placeholder="e.g., CIF Growth Monthly" />
+          </div>
+
+          <!-- Sections (drop zones) -->
+          <div class="space-y-3">
+            <!-- Columns -->
+            <div>
+              <label class="form-label">Columns (drop fields here)</label>
+              <div class="min-h-24 rounded-md border-2 border-dashed border-base-300 p-2"
+                   @dragover.prevent @drop="dropToColumns($event)">
+                <template x-for="(col, i) in report.columns" :key="i">
+                  <span class="badge badge-primary mr-1 mb-1">
+                    <span x-text="iconFor(col.type)"></span>
+                    <span class="ml-1" x-text="col.name"></span>
+                    <button @click="report.columns.splice(i, 1)" class="ml-1">×</button>
+                  </span>
+                </template>
+                <span x-show="report.columns.length === 0" class="text-xs text-gray-500">Drop fields to add columns</span>
+              </div>
+            </div>
+
+            <!-- Group By -->
+            <div>
+              <label class="form-label">Group By</label>
+              <div class="min-h-12 rounded-md border-2 border-dashed border-base-300 p-2"
+                   @dragover.prevent @drop="dropToGroupBy($event)">
+                <template x-for="(col, i) in report.groupBy" :key="i">
+                  <span class="badge badge-secondary mr-1 mb-1">
+                    <span x-text="col.name"></span>
+                    <button @click="report.groupBy.splice(i, 1)" class="ml-1">×</button>
+                  </span>
+                </template>
+                <span x-show="report.groupBy.length === 0" class="text-xs text-gray-500">Optional: drag fields to group by</span>
+              </div>
+            </div>
+
+            <!-- Filters -->
+            <div>
+              <label class="form-label">Filters (WHERE clause)</label>
+              <div class="rounded-md border border-base-300 p-2 space-y-1">
+                <template x-for="(f, i) in report.filters" :key="i">
+                  <div class="flex items-center gap-2">
+                    <span class="badge badge-outline" x-text="f.field"></span>
+                    <select class="form-input form-input-sm" x-model="f.operator" style="width: auto;">
+                      <option>=</option>
+                      <option>!=</option>
+                      <option>&gt;</option>
+                      <option>&lt;</option>
+                      <option>≥</option>
+                      <option>≤</option>
+                      <option>LIKE</option>
+                      <option>IN</option>
+                    </select>
+                    <input type="text" class="form-input form-input-sm flex-1" x-model="f.value" />
+                    <button @click="report.filters.splice(i, 1)" class="btn btn-xs btn-error">×</button>
+                  </div>
+                </template>
+                <button @click="addFilter()" class="btn btn-xs btn-ghost">+ Add Filter</button>
+              </div>
+            </div>
+
+            <!-- Aggregations -->
+            <div>
+              <label class="form-label">Aggregations</label>
+              <div class="rounded-md border border-base-300 p-2 space-y-1">
+                <template x-for="(agg, i) in report.aggregations" :key="i">
+                  <div class="flex items-center gap-2">
+                    <select class="form-input form-input-sm" x-model="agg.function" style="width: auto;">
+                      <option>COUNT</option>
+                      <option>SUM</option>
+                      <option>AVG</option>
+                      <option>MIN</option>
+                      <option>MAX</option>
+                    </select>
+                    <span>of</span>
+                    <span class="badge badge-outline" x-text="agg.field"></span>
+                    <span>AS</span>
+                    <input type="text" class="form-input form-input-sm flex-1" x-model="agg.alias" />
+                    <button @click="report.aggregations.splice(i, 1)" class="btn btn-xs btn-error">×</button>
+                  </div>
+                </template>
+                <button @click="addAggregation()" class="btn btn-xs btn-ghost">+ Add Aggregation</button>
+              </div>
+            </div>
+
+            <!-- Visualization -->
+            <div>
+              <label class="form-label">Visualization</label>
+              <div class="join">
+                <input type="radio" name="viz" value="TABLE" class="join-item btn btn-sm" checked />
+                <span class="join-item btn btn-sm">📊 Table</span>
+                <input type="radio" name="viz" value="LINE" class="join-item btn btn-sm" />
+                <span class="join-item btn btn-sm">📈 Line</span>
+                <input type="radio" name="viz" value="BAR" class="join-item btn btn-sm" />
+                <span class="join-item btn btn-sm">📊 Bar</span>
+                <input type="radio" name="viz" value="PIE" class="join-item btn btn-sm" />
+                <span class="join-item btn btn-sm">🥧 Pie</span>
+                <input type="radio" name="viz" value="KPI" class="join-item btn btn-sm" />
+                <span class="join-item btn btn-sm">💯 KPI</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Preview -->
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-sm">👁️ Live Preview</h3>
+          <p class="text-xs text-gray-500 mb-2">Sample data (1,234 of 12,345,678 rows)</p>
+
+          <div class="overflow-x-auto max-h-96">
+            <table class="data-table text-xs">
+              <thead>
+                <tr>
+                  <template x-for="col in report.columns" :key="col.name">
+                    <th x-text="col.name"></th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="(row, i) in sampleData" :key="i">
+                  <tr>
+                    <template x-for="col in report.columns" :key="col.name">
+                      <td x-text="row[col.name] || 'N/A'"></td>
+                    </template>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="divider"></div>
+          <h4 class="text-sm font-semibold">📊 Stats</h4>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between"><span>Total rows:</span> <span class="font-mono">12,345,678</span></div>
+            <div class="flex justify-between"><span>Filtered:</span> <span class="font-mono">1,234,567</span></div>
+            <div class="flex justify-between"><span>Execution time:</span> <span class="font-mono">2.3s</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function reportBuilderPage() {
+        return {
+          report: {
+            name: '',
+            dataSource: 'customer',
+            columns: [],
+            groupBy: [],
+            filters: [],
+            aggregations: [],
+            visualization: 'TABLE',
+          },
+          dataSources: [
+            { name: 'customer', description: 'Master CIF table', records: 12345678 },
+            { name: 'kyc_check', description: 'KYC history', records: 12345678 },
+            { name: 'audit_log', description: 'Audit trail (immutable)', records: 56789012 },
+            { name: 'matching_pair', description: 'Potential duplicates', records: 234567 },
+            { name: 'workflow_task', description: 'Workflow tasks', records: 567890 },
+            { name: 'notification', description: 'Notifications sent', records: 12345678 },
+            { name: 'ml_prediction', description: 'ML predictions', records: 1234567 },
+          ],
+          availableFields: [
+            { name: 'cifNumber', type: 'STRING', description: 'CIF identifier' },
+            { name: 'fullName', type: 'STRING', description: 'Customer name' },
+            { name: 'dateOfBirth', type: 'DATE', description: 'DOB' },
+            { name: 'gender', type: 'STRING', description: 'MALE/FEMALE' },
+            { name: 'monthlyIncome', type: 'NUMBER', description: 'Income IDR' },
+            { name: 'riskProfile', type: 'STRING', description: 'LOW/MEDIUM/HIGH' },
+            { name: 'kycStatus', type: 'STRING', description: 'KYC state' },
+            { name: 'kycExpiryDate', type: 'DATE', description: 'KYC expiry' },
+            { name: 'pepStatus', type: 'BOOLEAN', description: 'PEP flag' },
+            { name: 'cifStatus', type: 'STRING', description: 'CIF state' },
+            { name: 'branchId', type: 'STRING', description: 'Branch' },
+            { name: 'createdAt', type: 'DATE', description: 'Created date' },
+            { name: 'updatedAt', type: 'DATE', description: 'Updated date' },
+          ],
+          sampleData: [
+            { cifNumber: 'CIF-2026-00000123', fullName: 'Budi Setiawan', dateOfBirth: '1985-03-15', gender: 'MALE', monthlyIncome: 25000000, riskProfile: 'LOW', kycStatus: 'APPROVED' },
+            { cifNumber: 'CIF-2026-00000124', fullName: 'Siti Aminah', dateOfBirth: '1990-07-22', gender: 'FEMALE', monthlyIncome: 35000000, riskProfile: 'LOW', kycStatus: 'APPROVED' },
+            { cifNumber: 'CIF-2026-00000125', fullName: 'Agus Wijaya', dateOfBirth: '1988-11-08', gender: 'MALE', monthlyIncome: 80000000, riskProfile: 'MEDIUM', kycStatus: 'APPROVED' },
+            { cifNumber: 'CIF-2026-00000126', fullName: 'Dewi Lestari', dateOfBirth: '1992-05-30', gender: 'FEMALE', monthlyIncome: 8000000, riskProfile: 'LOW', kycStatus: 'APPROVED' },
+            { cifNumber: 'CIF-2026-00000127', fullName: 'Hendra Gunawan', dateOfBirth: '1975-12-03', gender: 'MALE', monthlyIncome: 150000000, riskProfile: 'HIGH', kycStatus: 'APPROVED' },
+          ],
+
+          async init() {
+            // Add default columns
+            this.report.columns = [
+              { name: 'cifNumber', type: 'STRING' },
+              { name: 'fullName', type: 'STRING' },
+              { name: 'kycStatus', type: 'STRING' },
+            ];
+          },
+
+          selectDataSource(ds) {
+            this.report.dataSource = ds.name;
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Selected: ${ds.name}`, type: 'info' } }));
+          },
+
+          iconFor(type) {
+            return { STRING: '🔤', NUMBER: '🔢', DATE: '📅', BOOLEAN: '✓' }[type] || '•';
+          },
+
+          dragField(field, e) {
+            e.dataTransfer.setData('field', JSON.stringify(field));
+            e.dataTransfer.effectAllowed = 'copy';
+          },
+
+          dropToColumns(e) {
+            e.preventDefault();
+            const field = JSON.parse(e.dataTransfer.getData('field'));
+            if (!this.report.columns.find(c => c.name === field.name)) {
+              this.report.columns.push(field);
+            }
+          },
+
+          dropToGroupBy(e) {
+            e.preventDefault();
+            const field = JSON.parse(e.dataTransfer.getData('field'));
+            if (!this.report.groupBy.find(c => c.name === field.name)) {
+              this.report.groupBy.push(field);
+            }
+          },
+
+          addFilter() {
+            this.report.filters.push({ field: 'kycStatus', operator: '=', value: 'APPROVED' });
+          },
+
+          addAggregation() {
+            this.report.aggregations.push({ function: 'COUNT', field: 'id', alias: 'total_count' });
+          },
+
+          previewReport() {
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Preview updated', type: 'success' } }));
+          },
+
+          saveReport() {
+            if (!this.report.name) {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: 'Report name is required', type: 'error' } }));
+              return;
+            }
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Report "${this.report.name}" saved!`, type: 'success' } }));
+          },
+
+          exportReport() {
+            const format = confirm('Export as Excel? (Cancel for PDF)') ? 'excel' : 'pdf';
+            window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Exporting as ${format.toUpperCase()}...`, type: 'info' } }));
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('toast:show', { detail: { message: `Report exported as ${format.toUpperCase()}`, type: 'success' } }));
+            }, 1500);
+          },
+        };
+      }
+
+      window.reportBuilderPage = reportBuilderPage;
+    </script>
+  </body>
+</html>

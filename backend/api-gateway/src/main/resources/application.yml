@@ -1,0 +1,301 @@
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+        - AddRequestHeader=X-Gateway, api-gateway
+        - AddResponseHeader=X-Gateway, api-gateway
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+  # Eureka (service discovery)
+  eureka:
+    client:
+      service-url:
+        defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+      register-with-eureka: true
+      fetch-registry: true
+    instance:
+      prefer-ip-address: true
+      lease-renewal-interval-in-seconds: 10
+
+  # Config server (optional, for centralized config)
+  config:
+    import: "optional:configserver:http://localhost:8888"
+
+  # Redis (rate limiting)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  # Security
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/mdm-dev}
+
+server:
+  port: ${SERVER_PORT:8080}
+  compression:
+    enabled: true
+  netty:
+    connection-timeout: 5s
+  forward-headers-strategy: framework
+
+# ============================================================
+# ROUTES
+# ============================================================
+# Pattern: Each service has a path like /api/v1/{service}/** routed to service
+
+spring.cloud.gateway.routes:
+  - id: auth-service
+    uri: lb://auth-service
+    predicates:
+      - Path=/api/v1/auth/**
+    filters:
+      - StripPrefix=0
+      - name: CircuitBreaker
+        args:
+          name: auth-cb
+          fallbackUri: forward:/fallback/auth
+      - name: RequestRateLimiter
+        args:
+          redis-rate-limiter.replenishRate: 100
+          redis-rate-limiter.burstCapacity: 200
+          redis-rate-limiter.requestedTokens: 1
+      - name: Retry
+        args:
+          retries: 3
+          statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE
+          backoff:
+            firstBackoff: 100ms
+            maxBackoff: 1000ms
+            factor: 2
+
+  - id: customer-service
+    uri: lb://customer-service
+    predicates:
+      - Path=/api/v1/customers/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: customer-cb
+          fallbackUri: forward:/fallback/customer
+      - name: RequestRateLimiter
+        args:
+          redis-rate-limiter.replenishRate: 60
+          redis-rate-limiter.burstCapacity: 120
+
+  - id: matching-service
+    uri: lb://matching-service
+    predicates:
+      - Path=/api/v1/matching/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: matching-cb
+          fallbackUri: forward:/fallback/matching
+
+  - id: audit-service
+    uri: lb://audit-service
+    predicates:
+      - Path=/api/v1/audit/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: audit-cb
+          fallbackUri: forward:/fallback/audit
+
+  - id: notification-service
+    uri: lb://notification-service
+    predicates:
+      - Path=/api/v1/notifications/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: notification-cb
+          fallbackUri: forward:/fallback/notification
+
+  - id: workflow-service
+    uri: lb://workflow-service
+    predicates:
+      - Path=/api/v1/workflows/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: workflow-cb
+          fallbackUri: forward:/fallback/workflow
+
+  - id: product-service
+    uri: lb://product-service
+    predicates:
+      - Path=/api/v1/products/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: product-cb
+          fallbackUri: forward:/fallback/product
+
+  - id: branch-service
+    uri: lb://branch-service
+    predicates:
+      - Path=/api/v1/branches/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: branch-cb
+          fallbackUri: forward:/fallback/branch
+
+  - id: report-service
+    uri: lb://report-service
+    predicates:
+      - Path=/api/v1/reports/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: report-cb
+          fallbackUri: forward:/fallback/report
+
+  - id: ml-service
+    uri: lb://ml-service
+    predicates:
+      - Path=/api/v1/ml/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: ml-cb
+          fallbackUri: forward:/fallback/ml
+
+  - id: integration-service
+    uri: lb://integration-service
+    predicates:
+      - Path=/api/v1/integrations/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: integration-cb
+          fallbackUri: forward:/fallback/integration
+
+  - id: document-service
+    uri: lb://document-service
+    predicates:
+      - Path=/api/v1/documents/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: document-cb
+          fallbackUri: forward:/fallback/document
+
+  - id: admin-service
+    uri: lb://admin-service
+    predicates:
+      - Path=/api/v1/admin/**
+    filters:
+      - name: CircuitBreaker
+        args:
+          name: admin-cb
+          fallbackUri: forward:/fallback/admin
+
+# ============================================================
+# RESILIENCE4J CIRCUIT BREAKER CONFIG
+# ============================================================
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+    instances:
+      auth-cb:
+        baseConfig: default
+      customer-cb:
+        baseConfig: default
+      matching-cb:
+        baseConfig: default
+      audit-cb:
+        baseConfig: default
+      notification-cb:
+        baseConfig: default
+      workflow-cb:
+        baseConfig: default
+      product-cb:
+        baseConfig: default
+      branch-cb:
+        baseConfig: default
+      report-cb:
+        baseConfig: default
+      ml-cb:
+        baseConfig: default
+      integration-cb:
+        baseConfig: default
+      document-cb:
+        baseConfig: default
+      admin-cb:
+        baseConfig: default
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+
+# ============================================================
+# MANAGEMENT & OBSERVABILITY
+# ============================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.75,0.95,0.99
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty: INFO
+    com.bankxyz.mdm: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-}] %logger{36} - %msg%n"

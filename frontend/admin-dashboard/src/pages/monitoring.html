@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="bankxyz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitoring - MDM Admin</title>
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body class="bg-base-200" x-data="monitoringPage()" x-init="init()">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold">System Monitoring</h1>
+      <p class="text-sm text-gray-500">Real-time monitoring of all MDM services</p>
+    </div>
+
+    <!-- Service Status Grid -->
+    <div class="card mb-6 bg-base-100 shadow-md">
+      <div class="card-body">
+        <h3 class="card-title text-base">Service Status (13 services)</h3>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <template x-for="svc in services" :key="svc.name">
+            <div class="rounded-md border border-base-300 p-4">
+              <div class="mb-2 flex items-center justify-between">
+                <h4 class="font-mono text-sm font-semibold" x-text="svc.name"></h4>
+                <span :class="`status-dot status-${svc.status === 'UP' ? 'up' : svc.status === 'WARNING' ? 'warning' : 'down'}`"></span>
+              </div>
+              <div class="space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Status:</span>
+                  <span :class="svc.status === 'UP' ? 'text-success' : svc.status === 'WARNING' ? 'text-warning' : 'text-error'" class="font-medium" x-text="svc.status"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Response:</span>
+                  <span x-text="svc.responseTime + 'ms'"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">CPU:</span>
+                  <span x-text="svc.cpu + '%'"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Memory:</span>
+                  <span x-text="svc.memory + 'MB'"></span>
+                </div>
+                <div class="mt-1 flex justify-between">
+                  <span class="text-gray-500">Port:</span>
+                  <span class="font-mono" x-text="svc.port"></span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Performance -->
+    <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-base">PostgreSQL Performance</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Active Connections</span>
+                <span class="font-mono">234 / 500</span>
+              </div>
+              <progress class="progress progress-primary" value="234" max="500"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Replication Lag</span>
+                <span class="font-mono">0.5s</span>
+              </div>
+              <progress class="progress progress-success" value="5" max="100"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Cache Hit Ratio</span>
+                <span class="font-mono">99.2%</span>
+              </div>
+              <progress class="progress progress-success" value="99" max="100"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Disk Usage</span>
+                <span class="font-mono">45% / 1TB</span>
+              </div>
+              <progress class="progress progress-warning" value="45" max="100"></progress>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-md">
+        <div class="card-body">
+          <h3 class="card-title text-base">Kafka Cluster</h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Brokers (3/3)</span>
+                <span class="badge badge-success badge-sm">HEALTHY</span>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Total Topics</span>
+                <span class="font-mono">5</span>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Messages/sec (avg)</span>
+                <span class="font-mono">12,345</span>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs">
+                <span>Consumer Lag (max)</span>
+                <span class="font-mono text-warning">1,234 msgs</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function monitoringPage() {
+        return {
+          services: [
+            { name: 'api-gateway', status: 'UP', responseTime: 12, cpu: 23, memory: 512, port: 8080 },
+            { name: 'auth-service', status: 'UP', responseTime: 23, cpu: 18, memory: 384, port: 8081 },
+            { name: 'customer-service', status: 'UP', responseTime: 45, cpu: 34, memory: 768, port: 8082 },
+            { name: 'matching-service', status: 'UP', responseTime: 67, cpu: 45, memory: 1024, port: 8083 },
+            { name: 'audit-service', status: 'UP', responseTime: 12, cpu: 15, memory: 256, port: 8084 },
+            { name: 'notification-service', status: 'UP', responseTime: 34, cpu: 22, memory: 384, port: 8085 },
+            { name: 'workflow-service', status: 'UP', responseTime: 56, cpu: 28, memory: 512, port: 8086 },
+            { name: 'product-service', status: 'UP', responseTime: 28, cpu: 20, memory: 384, port: 8087 },
+            { name: 'branch-service', status: 'UP', responseTime: 18, cpu: 12, memory: 256, port: 8088 },
+            { name: 'report-service', status: 'UP', responseTime: 89, cpu: 35, memory: 512, port: 8089 },
+            { name: 'ml-service', status: 'WARNING', responseTime: 234, cpu: 78, memory: 2048, port: 8090 },
+            { name: 'integration-service', status: 'UP', responseTime: 56, cpu: 30, memory: 512, port: 8091 },
+            { name: 'document-service', status: 'UP', responseTime: 67, cpu: 25, memory: 768, port: 8092 },
+          ],
+
+          async init() {
+            // Auto-refresh every 10s
+            setInterval(() => this.refresh(), 10000);
+          },
+
+          async refresh() {
+            // TODO: Fetch real metrics from /actuator endpoints
+            console.log('Refreshing monitoring data...');
+          },
+        };
+      }
+
+      window.monitoringPage = monitoringPage;
+    </script>
+  </body>
+</html>
