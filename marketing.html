@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUREA — Platform MDM #1 Indonesia · 100% Open Source</title>
+<meta name="description" content="AUREA adalah platform Master Data Management (MDM) buatan Indonesia. Dilengkapi integrasi Dukcapil, DJP, BI FAST, OJK, dan kepatuhan UU PDP. Dibandingkan dengan IBM MDM, Oracle EDM, SAP MDG, Profisee, Informatica, Talend, Pimcore.">
+<style>
+:root {
+  --gold: #c8a658;
+  --gold-dark: #a8883e;
+  --gold-light: #f4e9c8;
+  --gold-pale: #fdf8e7;
+  --navy: #0a1f3d;
+  --navy-light: #1a2f5a;
+  --indigo: #4338ca;
+  --text: #0a0a0a;
+  --text-muted: #6b7280;
+  --text-soft: #9ca3af;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  --bg: #ffffff;
+  --bg-soft: #fafafa;
+  --bg-card: #ffffff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --critical: #dc2626;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --gradient-hero: linear-gradient(135deg, #0a1f3d 0%, #1a2f5a 50%, #c8a658 100%);
+  --gradient-gold: linear-gradient(135deg, #c8a658 0%, #a8883e 100%);
+  --gradient-navy: linear-gradient(135deg, #0a1f3d 0%, #1a2f5a 100%);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.25);
+  --shadow-gold: 0 8px 24px -4px rgba(200,166,88,0.4);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4, h5, h6 { font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); }
+h2 { font-size: clamp(2rem, 4vw, 3rem); }
+h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+p { color: var(--text-muted); }
+a { color: var(--gold-dark); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--gold); }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+.container-narrow { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+.top-banner {
+  background: var(--gradient-navy);
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 13px;
+  border-bottom: 1px solid var(--gold);
+}
+.top-banner b { color: var(--gold); }
+
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+.nav-wrap { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 24px; color: var(--navy); }
+.brand-mark {
+  width: 40px; height: 40px;
+  background: var(--gradient-gold);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  color: white; font-size: 20px;
+  box-shadow: var(--shadow-gold);
+}
+.brand-name { letter-spacing: -0.02em; }
+.brand-name span { color: var(--gold-dark); }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a { color: var(--text); font-weight: 500; font-size: 14px; }
+.nav-links a:hover { color: var(--gold-dark); }
+.nav-cta { display: flex; gap: 12px; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px; border-radius: 8px;
+  font-weight: 600; font-size: 14px;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  font-family: inherit;
+}
+.btn-primary { background: var(--gradient-gold); color: white; box-shadow: var(--shadow-gold); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px -4px rgba(200,166,88,0.5); color: white; }
+.btn-secondary { background: white; color: var(--navy); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--gold); color: var(--navy); }
+.btn-ghost { background: transparent; color: var(--navy); }
+.btn-ghost:hover { color: var(--gold-dark); }
+.btn-lg { padding: 14px 28px; font-size: 16px; }
+.btn-xl { padding: 18px 36px; font-size: 18px; }
+.btn-white { background: white; color: var(--navy); }
+.btn-white:hover { transform: translateY(-1px); color: var(--navy); }
+
+.hero {
+  background: var(--gradient-hero);
+  color: white;
+  padding: 100px 0 120px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(200,166,88,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(200,166,88,0.15) 0%, transparent 50%);
+}
+.hero-wrap { position: relative; z-index: 1; display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; align-items: center; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(200,166,88,0.2);
+  border: 1px solid rgba(200,166,88,0.4);
+  padding: 6px 14px; border-radius: 100px;
+  font-size: 12px; font-weight: 600;
+  color: var(--gold-light);
+  margin-bottom: 20px;
+}
+.hero-tag .dot { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.hero h1 { margin-bottom: 24px; }
+.hero h1 .gold { color: var(--gold); display: block; }
+.hero p.lead { font-size: 20px; color: rgba(255,255,255,0.85); margin-bottom: 36px; line-height: 1.6; }
+.hero-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 48px; }
+.hero-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding-top: 36px; border-top: 1px solid rgba(255,255,255,0.15); }
+.hero-stat-num { font-size: 32px; font-weight: 800; color: var(--gold); line-height: 1; }
+.hero-stat-lbl { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+.hero-mockup {
+  background: white; border-radius: 16px; padding: 16px;
+  box-shadow: var(--shadow-xl);
+  position: relative; transform: rotate(-1.5deg);
+}
+.hero-mockup::before {
+  content: 'AUREA Dashboard';
+  position: absolute; top: -12px; left: 24px;
+  background: var(--gradient-gold);
+  color: white; padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.mockup-bar { display: flex; gap: 4px; padding: 8px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gray-300); }
+.mockup-dot.r { background: #ef4444; }
+.mockup-dot.y { background: #f59e0b; }
+.mockup-dot.g { background: #10b981; }
+.mockup-content { padding: 12px; }
+.mockup-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.mockup-kpi { background: var(--gold-pale); padding: 12px; border-radius: 8px; }
+.mockup-kpi-lbl { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+.mockup-kpi-val { font-size: 20px; font-weight: 800; color: var(--navy); margin-top: 4px; }
+.mockup-chart { height: 100px; background: linear-gradient(180deg, var(--gold-light) 0%, transparent 100%); border-radius: 8px; position: relative; }
+.mockup-chart::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 60%;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-dark) 100%);
+  clip-path: polygon(0 100%, 0 60%, 10% 40%, 20% 70%, 30% 30%, 40% 50%, 50% 20%, 60% 40%, 70% 10%, 80% 30%, 90% 20%, 100% 5%, 100% 100%);
+  opacity: 0.7;
+}
+.mockup-rows { margin-top: 12px; }
+.mockup-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 10px; border-bottom: 1px solid var(--border); }
+.mockup-row:last-child { border-bottom: 0; }
+.mockup-row-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+.mockup-row-name { flex: 1; color: var(--text); font-weight: 600; }
+.mockup-row-val { color: var(--text-muted); font-family: monospace; }
+
+section { padding: 100px 0; }
+.section-soft { background: var(--bg-soft); }
+.section-dark { background: var(--navy); color: white; }
+.section-dark h2, .section-dark h3 { color: white; }
+.section-dark p { color: rgba(255,255,255,0.7); }
+.section-eyebrow { color: var(--gold-dark); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.section-title { text-align: center; margin-bottom: 16px; }
+.section-subtitle { text-align: center; max-width: 700px; margin: 0 auto 60px; font-size: 18px; }
+
+.trusted { padding: 60px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.trusted-lbl { text-align: center; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 30px; }
+.trusted-logos { display: grid; grid-template-columns: repeat(6, 1fr); gap: 40px; align-items: center; opacity: 0.6; }
+.trusted-logo { font-size: 14px; font-weight: 700; color: var(--gray-600); text-align: center; }
+
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.feature-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  transition: all 0.3s;
+}
+.feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--gold); }
+.feature-icon {
+  width: 48px; height: 48px;
+  background: var(--gold-pale);
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: var(--gold-dark);
+}
+.feature-card h3 { font-size: 18px; margin-bottom: 8px; }
+.feature-card p { font-size: 14px; line-height: 1.6; }
+.feature-list { list-style: none; margin-top: 16px; }
+.feature-list li { font-size: 13px; color: var(--text-muted); padding: 4px 0; padding-left: 20px; position: relative; }
+.feature-list li::before { content: '✓'; position: absolute; left: 0; color: var(--gold-dark); font-weight: 700; }
+
+.modules-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.module-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: left;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.module-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.module-card-icon { font-size: 28px; margin-bottom: 12px; }
+.module-card h4 { font-size: 14px; margin-bottom: 6px; }
+.module-card p { font-size: 12px; line-height: 1.5; }
+.module-card .badge {
+  position: absolute; top: 16px; right: 16px;
+  font-size: 9px; padding: 2px 6px;
+  background: var(--gold-pale); color: var(--gold-dark);
+  border-radius: 4px; font-weight: 700;
+  text-transform: uppercase;
+}
+
+.comparison-wrap { background: white; border-radius: 20px; padding: 40px; box-shadow: var(--shadow-xl); overflow-x: auto; }
+.comparison-wrap h3 { margin-bottom: 12px; font-size: 20px; }
+.comparison-wrap .sub { color: var(--text-muted); margin-bottom: 24px; font-size: 14px; }
+.comparison-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 1200px; }
+.comparison-table th, .comparison-table td { padding: 12px 10px; text-align: center; border-bottom: 1px solid var(--border); }
+.comparison-table th { background: var(--navy); color: white; font-weight: 700; font-size: 12px; position: sticky; top: 0; }
+.comparison-table th.aurea-col { background: var(--gradient-gold); color: white; }
+.comparison-table td.label { text-align: left; font-weight: 600; color: var(--text); background: var(--bg-soft); }
+.comparison-table td.feature-name { text-align: left; font-weight: 600; color: var(--text); }
+.comparison-table tr:hover td { background: var(--gold-pale); }
+.comparison-table tr:hover td.aurea-col { background: var(--gold); }
+.comparison-table .aurea-col { background: rgba(200,166,88,0.1); font-weight: 700; }
+.check-yes { color: var(--success); font-size: 16px; font-weight: 700; }
+.check-partial { color: var(--warning); font-size: 16px; }
+.check-no { color: var(--text-soft); font-size: 16px; }
+.check-na { color: var(--text-soft); }
+
+.tabs-bar {
+  display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+  border-bottom: 2px solid var(--border);
+}
+.tab-btn {
+  padding: 10px 20px; border: none; background: transparent;
+  font-weight: 600; font-size: 14px; cursor: pointer;
+  color: var(--text-muted); border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.tab-btn:hover { color: var(--navy); }
+.tab-btn.active { color: var(--gold-dark); border-bottom-color: var(--gold); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.compliance-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.compliance-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(200,166,88,0.3);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s;
+}
+.compliance-card:hover { background: rgba(200,166,88,0.1); transform: translateY(-4px); }
+.compliance-flag { font-size: 32px; margin-bottom: 12px; }
+.compliance-card h4 { color: white; font-size: 14px; margin-bottom: 6px; }
+.compliance-card p { color: rgba(255,255,255,0.7); font-size: 12px; line-height: 1.5; }
+
+.form-mockup {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  margin: 0 auto;
+}
+.form-mockup h3 { font-size: 18px; margin-bottom: 4px; }
+.form-mockup .sub { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+.form-row { margin-bottom: 16px; }
+.form-row label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+.form-row label .req { color: var(--danger); }
+.form-input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-size: 13px; font-family: inherit;
+  background: var(--gray-50);
+  transition: all 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--gold); background: white; box-shadow: 0 0 0 3px var(--gold-pale); }
+.form-input.success { border-color: var(--success); background: rgba(16,185,129,0.05); }
+.form-input.error { border-color: var(--danger); background: rgba(239,68,68,0.05); }
+.form-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.form-hint.success { color: var(--success); }
+.form-hint.error { color: var(--danger); }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.pricing-card {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  position: relative;
+}
+.pricing-card.featured { border-color: var(--gold); transform: scale(1.05); box-shadow: var(--shadow-xl); }
+.pricing-card.featured::before {
+  content: '⭐ POPULER';
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--gradient-gold); color: white;
+  padding: 4px 16px; border-radius: 100px;
+  font-size: 11px; font-weight: 700;
+}
+.pricing-name { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.pricing-price { font-size: 48px; font-weight: 800; color: var(--navy); }
+.pricing-price .currency { font-size: 24px; color: var(--text-muted); vertical-align: super; }
+.pricing-price .period { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+.pricing-desc { color: var(--text-muted); margin: 12px 0 24px; font-size: 14px; }
+.pricing-features { list-style: none; text-align: left; margin: 24px 0; padding: 0; }
+.pricing-features li { padding: 8px 0; font-size: 13px; color: var(--text); border-bottom: 1px solid var(--border); }
+.pricing-features li::before { content: '✓'; color: var(--gold-dark); font-weight: 700; margin-right: 8px; }
+
+.cta-section {
+  background: var(--gradient-hero);
+  color: white;
+  text-align: center;
+  padding: 100px 0;
+}
+.cta-section h2 { color: white; margin-bottom: 20px; }
+.cta-section p { color: rgba(255,255,255,0.85); font-size: 18px; margin-bottom: 32px; }
+.cta-section .hero-cta { justify-content: center; }
+
+.footer { background: var(--navy); color: rgba(255,255,255,0.7); padding: 60px 0 30px; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+.footer-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.footer-brand .brand-mark { width: 32px; height: 32px; font-size: 16px; }
+.footer-brand-name { font-size: 18px; font-weight: 800; color: white; }
+.footer-tag { font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+.footer h5 { color: white; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+.footer ul { list-style: none; padding: 0; }
+.footer ul li { padding: 4px 0; font-size: 13px; }
+.footer ul li a { color: rgba(255,255,255,0.7); }
+.footer ul li a:hover { color: var(--gold); }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; font-size: 12px; text-align: center; }
+
+.float-cta { position: fixed; bottom: 24px; right: 24px; z-index: 99; }
+.float-btn {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--gradient-gold);
+  color: white; padding: 14px 22px;
+  border-radius: 100px;
+  font-weight: 700; font-size: 14px;
+  box-shadow: var(--shadow-lg);
+  text-decoration: none;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.float-btn:hover { transform: translateY(-2px) scale(1.05); color: white; box-shadow: 0 20px 40px -4px rgba(200,166,88,0.6); }
+.float-pulse { position: relative; }
+.float-pulse::before {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 100px;
+  background: var(--gold);
+  opacity: 0.4;
+  animation: float-pulse 2s infinite;
+}
+@keyframes float-pulse { 0% { transform: scale(1); opacity: 0.4; } 100% { transform: scale(1.4); opacity: 0; } }
+
+.gap-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.gap-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--warning);
+  border-radius: 8px;
+  padding: 20px;
+}
+.gap-card h4 { color: var(--navy); font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.gap-card p { font-size: 12px; line-height: 1.6; }
+.gap-card .who { font-size: 11px; color: var(--gold-dark); font-weight: 600; margin-top: 6px; }
+
+.roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+.roadmap::before {
+  content: '';
+  position: absolute; top: 24px; left: 12.5%; right: 12.5%; height: 2px;
+  background: var(--gradient-gold);
+  z-index: 0;
+}
+.roadmap-step { text-align: center; position: relative; z-index: 1; }
+.roadmap-dot { width: 48px; height: 48px; border-radius: 50%; background: var(--gradient-gold); color: white; display: grid; place-items: center; margin: 0 auto 16px; font-weight: 800; box-shadow: var(--shadow-gold); }
+.roadmap-step h4 { font-size: 14px; margin-bottom: 6px; }
+.roadmap-step p { font-size: 12px; }
+.roadmap-step .badge-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-top: 6px; }
+.badge-status.done { background: var(--success); color: white; }
+.badge-status.active { background: var(--gold); color: white; }
+.badge-status.next { background: var(--gray-200); color: var(--gray-700); }
+
+@media (max-width: 1024px) {
+  .hero-wrap { grid-template-columns: 1fr; gap: 40px; }
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .modules-grid { grid-template-columns: repeat(3, 1fr); }
+  .compliance-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .pricing-card.featured { transform: none; }
+  .footer-grid { grid-template-columns: repeat(3, 1fr); }
+  .nav-links { display: none; }
+}
+@media (max-width: 640px) {
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  .features-grid { grid-template-columns: 1fr; }
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+  .compliance-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  section { padding: 60px 0; }
+  .hero { padding: 60px 0 80px; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .comparison-wrap { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  🇮🇩 <b>AUREA 4.0</b> — Dibandingkan dengan IBM MDM, Oracle EDM, SAP MDG, Profisee, Informatica, Talend, Pimcore
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-wrap">
+      <a href="#" class="brand">
+        <div class="brand-mark">A</div>
+        <div class="brand-name">AUREA<span>.</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="#modules">Modul</a>
+        <a href="#compliance">Compliance</a>
+        <a href="#comparison">Perbandingan</a>
+        <a href="#pricing">Harga</a>
+        <a href="#gap">Gap Analysis</a>
+        <a href="#roadmap">Roadmap</a>
+      </div>
+      <div class="nav-cta">
+        <a href="http://localhost:5050/spa-standalone.html" target="_blank" class="btn btn-ghost">Live Demo</a>
+        <a href="#pricing" class="btn btn-primary">Mulai Gratis</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-wrap">
+      <div>
+        <div class="hero-tag"><span class="dot"></span> 100% Open Source · Buatan Indonesia</div>
+        <h1>Platform <span class="gold">MDM + CDP + AI</span> Pertama di Indonesia</h1>
+        <p class="lead">AUREA adalah platform <b>Master Data Management</b> modern yang setara dengan IBM MDM, Oracle EDM, SAP MDG, dan Profisee — tapi dengan kepatuhan <b>Dukcapil</b>, <b>DJP</b>, <b>BI FAST</b>, <b>UU PDP</b>, <b>OJK</b>, dan <b>e-KYC</b> native. 100% open source, 100% Bahasa Indonesia.</p>
+        <div class="hero-cta">
+          <a href="http://localhost:5050/spa-standalone.html" target="_blank" class="btn btn-primary btn-xl">🚀 Coba Live Demo Gratis</a>
+          <a href="https://github.com/radianadhic/aurea" target="_blank" class="btn btn-white btn-xl">⭐ GitHub (Public)</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-num">100%</div>
+            <div class="hero-stat-lbl">Open Source</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">16</div>
+            <div class="hero-stat-lbl">Modul Lengkap</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">4</div>
+            <div class="hero-stat-lbl">AI Engine</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">&lt;1 jam</div>
+            <div class="hero-stat-lbl">Setup Time</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="hero-mockup">
+          <div class="mockup-bar">
+            <div class="mockup-dot r"></div>
+            <div class="mockup-dot y"></div>
+            <div class="mockup-dot g"></div>
+            <div style="flex:1; text-align:center; font-size:10px; color: var(--text-muted); margin-left: 8px">aurea.id/dashboard</div>
+          </div>
+          <div class="mockup-content">
+            <div class="mockup-kpis">
+              <div class="mockup-kpi">
+                <div class="mockup-kpi-lbl">Total Customer</div>
+                <div class="mockup-kpi-val">200</div>
+              </div>
+              <div class="mockup-kpi">
+                <div class="mockup-kpi-lbl">CLV Total</div>
+                <div class="mockup-kpi-val">Rp 8.5M</div>
+              </div>
+              <div class="mockup-kpi">
+                <div class="mockup-kpi-lbl">Churn Risk</div>
+                <div class="mockup-kpi-val">12%</div>
+              </div>
+            </div>
+            <div class="mockup-chart"></div>
+            <div class="mockup-rows">
+              <div class="mockup-row">
+                <div class="mockup-row-dot"></div>
+                <div class="mockup-row-name">Siti Nurhaliza</div>
+                <div class="mockup-row-val">Rp 89M</div>
+              </div>
+              <div class="mockup-row">
+                <div class="mockup-row-dot"></div>
+                <div class="mockup-row-name">Budi Santoso</div>
+                <div class="mockup-row-val">Rp 72M</div>
+              </div>
+              <div class="mockup-row">
+                <div class="mockup-row-dot"></div>
+                <div class="mockup-row-name">Dewi Lestari</div>
+                <div class="mockup-row-val">Rp 65M</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUSTED BY -->
+<div class="trusted">
+  <div class="container">
+    <div class="trusted-lbl">Alternatif Indonesia untuk IBM MDM, Oracle EDM, SAP MDG, Profisee</div>
+    <div class="trusted-logos">
+      <div class="trusted-logo">🏦 BPD</div>
+      <div class="trusted-logo">🏛️ OJK</div>
+      <div class="trusted-logo">💼 BPR</div>
+      <div class="trusted-logo">🛒 E-Commerce</div>
+      <div class="trusted-logo">📱 Fintech</div>
+      <div class="trusted-logo">🏭 Manufaktur</div>
+    </div>
+  </div>
+</div>
+
+<!-- 16 MODULES -->
+<section id="modules">
+  <div class="container">
+    <div class="section-eyebrow">16 MODUL LENGKAP</div>
+    <h2 class="section-title">Semua yang Anda Butuhkan, dalam 1 Platform</h2>
+    <p class="section-subtitle">Tidak perlu beli 5 software berbeda. AUREA punya semuanya — dari Master Data Management hingga AI engines, semuanya terintegrasi.</p>
+    <div class="modules-grid">
+      <div class="module-card">
+        <div class="module-card-icon">👥</div>
+        <h4>Customer MDM</h4>
+        <p>200+ data points per customer. Segmentasi RFM otomatis. CLV prediction. e-KYC integrated.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">📦</div>
+        <h4>Product MDM</h4>
+        <p>20+ product types: banking, loans, insurance, investment. HS Code, BPOM, halal ready.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🏭</div>
+        <h4>Supplier MDM</h4>
+        <p>NPWP validation via DJP. KYC vendor. Due diligence. Performance rating.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">✅</div>
+        <h4>Data Quality</h4>
+        <p>8+ quality rules. Auto-fix. Score gauges. Severity levels. Real-time monitoring.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🛡️</div>
+        <h4>Data Governance</h4>
+        <p>UU PDP compliant. OJK, BI, retention, RBAC, audit, breach notification.</p>
+        <span class="badge">ID Only</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🔄</div>
+        <h4>Workflow Approval</h4>
+        <p>4-step visual stepper. Priority queue. SLA. Approve/Reject/Delegate.</p>
+        <span class="badge">NEW</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🎯</div>
+        <h4>Customer 360°</h4>
+        <p>Unified view across products, transactions, interactions, lifetime journey.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🧠</div>
+        <h4>Churn Prediction</h4>
+        <p>AI engine #1. Probability score. Risk levels. Prevention actions.</p>
+        <span class="badge">AI</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">💎</div>
+        <h4>CLV Prediction</h4>
+        <p>AI engine #2. 12-month forecast. Segment by value. Prioritization.</p>
+        <span class="badge">AI</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🎭</div>
+        <h4>Segmentation</h4>
+        <p>AI engine #3. RFM, behavioral, psychographic. Auto-refresh.</p>
+        <span class="badge">AI</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🚨</div>
+        <h4>Fraud Detection</h4>
+        <p>AI engine #4. Anomaly detection. Pattern recognition. Real-time alerts.</p>
+        <span class="badge">AI</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">📊</div>
+        <h4>Reports & Analytics</h4>
+        <p>Multi-page PDF export. Custom reports. Scheduled delivery.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🔌</div>
+        <h4>API & WebSocket</h4>
+        <p>REST API. Real-time events. PWA. Offline mode. Mobile-ready.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">🇮🇩</div>
+        <h4>Integrasi ID</h4>
+        <p>Dukcapil, DJP, BI FAST, OJK, e-KYC, QRIS, BPJS, AADK.</p>
+        <span class="badge">ID Only</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">📦</div>
+        <h4>Bulk Import</h4>
+        <p>CSV/Excel drag-drop, progress, error handling, templates.</p>
+        <span class="badge">Core</span>
+      </div>
+      <div class="module-card">
+        <div class="module-card-icon">⚙️</div>
+        <h4>Admin & Config</h4>
+        <p>Multi-tenant. RBAC. Audit log. Health monitoring. Settings.</p>
+        <span class="badge">Core</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IDR COMPLIANCE -->
+<section id="compliance" class="section-soft">
+  <div class="container">
+    <div class="section-eyebrow">🇮🇩 100% INDONESIA-COMPLIANT</div>
+    <h2 class="section-title">Satu-Satunya MDM Global yang Paham Regulasi Indonesia</h2>
+    <p class="section-subtitle">Lawan MDM global (IBM, Oracle, SAP, Informatica) yang harus dikonfigurasi manual untuk Indonesia. AUREA sudah compliance by default.</p>
+    <div class="compliance-grid">
+      <div class="compliance-card">
+        <div class="compliance-flag">🆔</div>
+        <h4>Dukcapil</h4>
+        <p>NIK 16 digit + checksum + parsing TTL & jenis kelamin otomatis</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">💼</div>
+        <h4>DJP</h4>
+        <p>NPWP 15 digit format XX.XXX.XXX.X-XXX.XXX + validasi KPP</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">🏦</div>
+        <h4>BI FAST</h4>
+        <p>Validasi nomor rekening 16-22 digit + bank code lookup real-time</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">🏛️</div>
+        <h4>OJK</h4>
+        <p>Laporan LBU, LHBU, APOLO, SLIK siap submit</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">📜</div>
+        <h4>UU PDP</h4>
+        <p>Consent management · Right to be forgotten · Breach notif 72 jam</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">🆔</div>
+        <h4>e-KYC</h4>
+        <p>Face match ≥95% + liveness detection + OCR KTP/Passport</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">🏠</div>
+        <h4>RT/RW</h4>
+        <p>Alamat 4-tier: Provinsi · Kab/Kota · Kecamatan · Kelurahan + RT/RW</p>
+      </div>
+      <div class="compliance-card">
+        <div class="compliance-flag">💳</div>
+        <h4>QRIS & BPJS</h4>
+        <p>Integrasi payment gateway nasional & validasi BPJS Kesehatan</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORM SHOWCASE -->
+<section>
+  <div class="container">
+    <div class="section-eyebrow">FORM CUSTOMER ID-COMPLIANT</div>
+    <h2 class="section-title">Form KYC yang User-Friendly</h2>
+    <p class="section-subtitle">Validasi live (hijau ✓ / merah ✕) saat user mengetik. NIK, NPWP, RT/RW, postcode, phone — semua divalidasi sesuai standar Indonesia.</p>
+    <div class="form-mockup">
+      <h3>✨ Create New Customer</h3>
+      <p class="sub">Lengkapi data customer sesuai KTP Indonesia</p>
+      <div class="form-row">
+        <label>NIK (KTP) <span class="req">*</span> 🇮🇩 Dukcapil</label>
+        <input class="form-input success" value="3174011234560001" readonly>
+        <div class="form-hint success">✓ NIK valid · Laki-laki · Kode Prov: 31 (DKI Jakarta)</div>
+      </div>
+      <div class="form-row">
+        <label>NPWP 💼 DJP</label>
+        <input class="form-input success" value="01.234.567.8-901.000" readonly>
+        <div class="form-hint success">✓ NPWP valid · KPP: 01</div>
+      </div>
+      <div class="form-row">
+        <label>Phone (HP) <span class="req">*</span></label>
+        <div style="display:flex; gap:8px;">
+          <input class="form-input" value="+62" style="width:80px" readonly>
+          <input class="form-input success" value="81234567890" readonly>
+        </div>
+        <div class="form-hint success">✓ Nomor valid (Indonesia)</div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>RT/RW</label>
+          <input class="form-input success" value="001/002" readonly>
+          <div class="form-hint success">✓ Format valid</div>
+        </div>
+        <div class="form-row">
+          <label>Kode Pos</label>
+          <input class="form-input success" value="10310" readonly>
+          <div class="form-hint success">✓ 5 digit</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Alamat Lengkap <span class="req">*</span></label>
+        <input class="form-input" value="Jl. Menteng Raya No. 12, Kel. Menteng" readonly>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label>Provinsi</label>
+          <input class="form-input" value="DKI Jakarta" readonly>
+        </div>
+        <div class="form-row">
+          <label>Kabupaten/Kota</label>
+          <input class="form-input" value="Jakarta Pusat" readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section id="comparison" class="section-soft">
+  <div class="container">
+    <div class="section-eyebrow">PERBANDINGAN 7 MDM PLATFORM</div>
+    <h2 class="section-title">AUREA vs MDM Global Terkenal</h2>
+    <p class="section-subtitle">Perbandingan fitur, modul, dan form pada AUREA, <b>IBM InfoSphere MDM</b>, <b>Oracle Enterprise Data Management</b>, <b>SAP Master Data Governance</b>, <b>Profisee</b>, Informatica, Talend, dan Pimcore.</p>
+
+    <div class="tabs-bar">
+      <button class="tab-btn active" data-tab="core">Modul Core</button>
+      <button class="tab-btn" data-tab="id">Integrasi ID</button>
+      <button class="tab-btn" data-tab="form">Form & UI</button>
+      <button class="tab-btn" data-tab="compliance">Compliance</button>
+      <button class="tab-btn" data-tab="tech">Tech Stack</button>
+      <button class="tab-btn" data-tab="pricing">Harga</button>
+    </div>
+
+    <!-- TAB: CORE MODULES -->
+    <div class="tab-content active" data-content="core">
+      <div class="comparison-wrap">
+        <h3>📦 Modul Core MDM/CDP</h3>
+        <p class="sub">Perbandingan fitur Master Data Management, Customer Data Platform, dan AI capabilities</p>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Modul</th>
+              <th class="aurea-col">AUREA</th>
+              <th>IBM<br>InfoSphere MDM</th>
+              <th>Oracle<br>EDM</th>
+              <th>SAP MDG</th>
+              <th>Profisee</th>
+              <th>Informatica</th>
+              <th>Talend</th>
+              <th>Pimcore</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label">Customer/Party MDM</td>
+              <td class="aurea-col">✅ + AI + 200 data points</td>
+              <td>✅✅ Industry leader</td>
+              <td>✅ Strong</td>
+              <td>✅ Excellent</td>
+              <td>✅ Multi-domain</td>
+              <td>✅✅ Best-in-class</td>
+              <td>✅ Open source</td>
+              <td>✅ Good</td>
+            </tr>
+            <tr>
+              <td class="label">Product MDM</td>
+              <td class="aurea-col">✅ + HS Code/BPOM</td>
+              <td>✅ Strong</td>
+              <td>✅ Good</td>
+              <td>✅✅ Material Master leader</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Best-in-class</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Supplier/Vendor MDM</td>
+              <td class="aurea-col">✅ + NPWP + Rating</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Vendor Master</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Full</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Financial Master Data</td>
+              <td class="aurea-col">⚠ Roadmap Q2 2027</td>
+              <td>⚠ Limited</td>
+              <td>✅✅ Best (COA, cost center)</td>
+              <td>✅✅ Best (FI/CO)</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Data Quality Engine</td>
+              <td class="aurea-col">✅ 8 rules + auto-fix</td>
+              <td>✅✅ Advanced matching</td>
+              <td>✅ Yes</td>
+              <td>✅ Built-in</td>
+              <td>✅ Configurable</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Good</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Data Governance</td>
+              <td class="aurea-col">✅ UU PDP native</td>
+              <td>✅✅ IBM governance suite</td>
+              <td>✅✅ Strong</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Enterprise</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Workflow Approval</td>
+              <td class="aurea-col">✅ 4-step visual</td>
+              <td>✅ Configurable</td>
+              <td>✅ Strong</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Pre-built</td>
+              <td>✅✅ Full BPM</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Customer 360°</td>
+              <td class="aurea-col">✅ Unified</td>
+              <td>✅✅ 360° view</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Excellent</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Hierarchy Management</td>
+              <td class="aurea-col">✅ Yes</td>
+              <td>✅✅ Hierarchical modeling</td>
+              <td>✅✅ Best for finance</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">AI Engines (built-in)</td>
+              <td class="aurea-col">✅ 4 (Churn/CLV/Seg/Fraud)</td>
+              <td>⚠ Watson add-on</td>
+              <td>⚠ AI Cloud add-on</td>
+              <td>⚠ BTP AI add-on</td>
+              <td>✅ Aisey AI assistant</td>
+              <td>⚠ CLAIRE add-on</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">Reports & Analytics</td>
+              <td class="aurea-col">✅ Multi-page PDF</td>
+              <td>✅ Cognos integration</td>
+              <td>✅ OAC integration</td>
+              <td>✅ BW/4HANA</td>
+              <td>✅ Power BI native</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Audit Trail (per field)</td>
+              <td class="aurea-col">✅ before/after</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅ Change documents</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Version History</td>
+              <td class="aurea-col">✅ Visual diff</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Full</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Bulk Import (CSV/Excel)</td>
+              <td class="aurea-col">✅ Drag-drop + progress</td>
+              <td>✅ InfoSphere Import</td>
+              <td>✅ FBDI/HDL</td>
+              <td>✅ Mass processing</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Enterprise</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Match & Merge</td>
+              <td class="aurea-col">✅ Fuzzy + exact</td>
+              <td>✅✅ Best algorithms</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Probabilistic</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: ID INTEGRATION -->
+    <div class="tab-content" data-content="id">
+      <div class="comparison-wrap">
+        <h3>🇮🇩 Integrasi Indonesia-Specific</h3>
+        <p class="sub">Fitur yang hanya dibutuhkan untuk pasar Indonesia: Dukcapil, DJP, BI FAST, OJK, UU PDP, e-KYC, RT/RW</p>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Integrasi</th>
+              <th class="aurea-col">AUREA</th>
+              <th>IBM<br>InfoSphere MDM</th>
+              <th>Oracle<br>EDM</th>
+              <th>SAP MDG</th>
+              <th>Profisee</th>
+              <th>Informatica</th>
+              <th>Talend</th>
+              <th>Pimcore</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label">Dukcapil (NIK 16 digit)</td>
+              <td class="aurea-col">✅ Native + parser</td>
+              <td>❌ Custom build</td>
+              <td>❌ Custom build</td>
+              <td>❌ Custom build</td>
+              <td>❌ Custom build</td>
+              <td>❌ Manual config</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+            </tr>
+            <tr>
+              <td class="label">DJP NPWP (15 digit)</td>
+              <td class="aurea-col">✅ Format + KPP parser</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+            </tr>
+            <tr>
+              <td class="label">e-KYC (Face + Liveness)</td>
+              <td class="aurea-col">✅ ≥95% confidence</td>
+              <td>⚠ Via partner</td>
+              <td>⚠ Via partner</td>
+              <td>⚠ Via partner</td>
+              <td>⚠ Via partner</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">BI FAST (Bank transfer)</td>
+              <td class="aurea-col">✅ Native + fee calc</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>⚠ SAP Banking add-on</td>
+              <td>❌ Custom</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+            </tr>
+            <tr>
+              <td class="label">OJK Reporting (LBU/LHBU/APOLO)</td>
+              <td class="aurea-col">✅ Templates ready</td>
+              <td>⚠ Custom build</td>
+              <td>⚠ Custom build</td>
+              <td>⚠ Custom build</td>
+              <td>❌ Custom</td>
+              <td>⚠ Custom build</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+            </tr>
+            <tr>
+              <td class="label">UU PDP No. 27/2022</td>
+              <td class="aurea-col">✅ Consent + forget + 72h</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+            </tr>
+            <tr>
+              <td class="label">QRIS</td>
+              <td class="aurea-col">✅ Merchant API</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>⚠ SAP Payment add-on</td>
+              <td>❌ Custom</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">RT/RW + Kelurahan</td>
+              <td class="aurea-col">✅ 4-tier + 34 prov</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>❌ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+            </tr>
+            <tr>
+              <td class="label">BPJS Kesehatan</td>
+              <td class="aurea-col">🟡 Roadmap Q1 2027</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">AADK (Donor Darah)</td>
+              <td class="aurea-col">🟡 Roadmap Q1 2027</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">Bahasa Indonesia Native</td>
+              <td class="aurea-col">✅ 100%</td>
+              <td>⚠ Custom localization</td>
+              <td>⚠ Custom localization</td>
+              <td>⚠ Custom localization</td>
+              <td>⚠ Custom localization</td>
+              <td>⚠ Mixed</td>
+              <td>❌ English</td>
+              <td>❌ English</td>
+            </tr>
+            <tr>
+              <td class="label">AADK / Dukcapil API</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+              <td>❌ Manual</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: FORM & UI -->
+    <div class="tab-content" data-content="form">
+      <div class="comparison-wrap">
+        <h3>📝 Form & UI Capabilities</h3>
+        <p class="sub">Kemampuan form input, validasi real-time, dan user experience</p>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Fitur Form/UI</th>
+              <th class="aurea-col">AUREA</th>
+              <th>IBM<br>InfoSphere MDM</th>
+              <th>Oracle<br>EDM</th>
+              <th>SAP MDG</th>
+              <th>Profisee</th>
+              <th>Informatica</th>
+              <th>Talend</th>
+              <th>Pimcore</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label">Live Validation (real-time)</td>
+              <td class="aurea-col">✅ Hijau/merah per field</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Drag-Drop File Upload</td>
+              <td class="aurea-col">✅ e-KYC ready</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Auto-format (NIK, NPWP, RT/RW)</td>
+              <td class="aurea-col">✅ Auto-mask</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+            </tr>
+            <tr>
+              <td class="label">Bulk Import Wizard</td>
+              <td class="aurea-col">✅ Drag-drop + progress</td>
+              <td>✅ InfoSphere Import</td>
+              <td>✅ FBDI templates</td>
+              <td>✅ Mass processing</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Column Mapping UI</td>
+              <td class="aurea-col">🟡 Roadmap Q4 2026</td>
+              <td>✅ Yes</td>
+              <td>✅ FBDI mapping</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Visual</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Conditional Fields</td>
+              <td class="aurea-col">✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Multi-step Forms</td>
+              <td class="aurea-col">✅ Stepper UI</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Save-as-Draft</td>
+              <td class="aurea-col">✅ Auto-save</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Form Templates</td>
+              <td class="aurea-col">✅ Per industry</td>
+              <td>✅ Pre-built data models</td>
+              <td>✅ Pre-built</td>
+              <td>✅✅ Industry-leading</td>
+              <td>✅ Yes</td>
+              <td>✅✅ Many</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Mobile-responsive</td>
+              <td class="aurea-col">✅ PWA</td>
+              <td>⚠ Limited</td>
+              <td>✅ Yes</td>
+              <td>✅ Fiori</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Stewardship UI</td>
+              <td class="aurea-col">✅ Modern web</td>
+              <td>✅✅ InfoSphere Stewardship</td>
+              <td>✅ Yes</td>
+              <td>✅✅ MDG Workflow</td>
+              <td>✅ Modern FastApps</td>
+              <td>✅✅ Excellent</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: COMPLIANCE -->
+    <div class="tab-content" data-content="compliance">
+      <div class="comparison-wrap">
+        <h3>⚖️ Compliance & Regulasi</h3>
+        <p class="sub">Kepatuhan terhadap regulasi data dan privasi di Indonesia + global</p>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Compliance</th>
+              <th class="aurea-col">AUREA</th>
+              <th>IBM<br>InfoSphere MDM</th>
+              <th>Oracle<br>EDM</th>
+              <th>SAP MDG</th>
+              <th>Profisee</th>
+              <th>Informatica</th>
+              <th>Talend</th>
+              <th>Pimcore</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label">UU PDP No. 27/2022</td>
+              <td class="aurea-col">✅ Native (consent, forget, 72h)</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+              <td>⚠ GDPR only</td>
+            </tr>
+            <tr>
+              <td class="label">POJK 1/2013 (BPR/S)</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+            </tr>
+            <tr>
+              <td class="label">POJK 75/2016 (IT Risk)</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">SLIK Reporting</td>
+              <td class="aurea-col">✅ Template</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+            </tr>
+            <tr>
+              <td class="label">APOLO Online</td>
+              <td class="aurea-col">✅ Template</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">LHBU/LBU</td>
+              <td class="aurea-col">✅ Template</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>⚠ Custom</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">Data Retention 5 tahun</td>
+              <td class="aurea-col">✅ Configurable</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Breach Notification</td>
+              <td class="aurea-col">✅ 72-hour SLA</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Data Subject Rights (DPIA)</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">GDPR (bonus)</td>
+              <td class="aurea-col">✅ Yes</td>
+              <td>✅✅ Excellent</td>
+              <td>✅✅ Excellent</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅✅</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">HIPAA</td>
+              <td class="aurea-col">✅ Yes</td>
+              <td>✅✅</td>
+              <td>✅✅</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅✅</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">SOC 2 / ISO 27001</td>
+              <td class="aurea-col">✅ Roadmap Q4 2026</td>
+              <td>✅✅</td>
+              <td>✅✅</td>
+              <td>✅✅</td>
+              <td>✅ Yes (certified)</td>
+              <td>✅✅</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: TECH STACK -->
+    <div class="tab-content" data-content="tech">
+      <div class="comparison-wrap">
+        <h3>💻 Tech Stack & Deployment</h3>
+        <p class="sub">Arsitektur teknis, deployment, dan integrasi enterprise</p>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Tech Aspect</th>
+              <th class="aurea-col">AUREA</th>
+              <th>IBM<br>InfoSphere MDM</th>
+              <th>Oracle<br>EDM</th>
+              <th>SAP MDG</th>
+              <th>Profisee</th>
+              <th>Informatica</th>
+              <th>Talend</th>
+              <th>Pimcore</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label">Open Source</td>
+              <td class="aurea-col">✅ 100% (MIT)</td>
+              <td>❌ Proprietary</td>
+              <td>❌ Proprietary</td>
+              <td>❌ Proprietary</td>
+              <td>❌ Proprietary</td>
+              <td>❌ Proprietary</td>
+              <td>✅ Community</td>
+              <td>✅ Community</td>
+            </tr>
+            <tr>
+              <td class="label">Source Code di GitHub</td>
+              <td class="aurea-col">✅ Public</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Self-hosted Option</td>
+              <td class="aurea-col">✅ On-premise/Cloud</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes (often mandatory)</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Cloud SaaS</td>
+              <td class="aurea-col">✅ aurea.id (planned)</td>
+              <td>✅ IBM Cloud Pak</td>
+              <td>✅ Oracle Cloud (EPM)</td>
+              <td>✅ SAP BTP</td>
+              <td>✅ SaaS/PaaS/IaaS</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">PWA + Offline</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>⚠ Fiori partial</td>
+              <td>⚠ Limited</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+            </tr>
+            <tr>
+              <td class="label">WebSocket Real-time</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>✅ Yes</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">REST API</td>
+              <td class="aurea-col">✅ 30+ endpoints</td>
+              <td>✅ Yes</td>
+              <td>✅ REST + SOAP</td>
+              <td>✅ OData + REST</td>
+              <td>✅ Open API</td>
+              <td>✅✅ Excellent</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">GraphQL Support</td>
+              <td class="aurea-col">🟡 Roadmap Q1 2027</td>
+              <td>⚠ Limited</td>
+              <td>❌</td>
+              <td>⚠ Limited</td>
+              <td>⚠ Limited</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Setup Time</td>
+              <td class="aurea-col">✅ &lt;1 jam</td>
+              <td>❌ 6-12 bulan</td>
+              <td>❌ 6-18 bulan</td>
+              <td>❌ 6-12 bulan</td>
+              <td>✅ &lt;90 hari</td>
+              <td>❌ 3-12 bulan</td>
+              <td>⚠ 1-3 bulan</td>
+              <td>⚠ 1-3 bulan</td>
+            </tr>
+            <tr>
+              <td class="label">ERP Integrations</td>
+              <td class="aurea-col">✅ Universal REST</td>
+              <td>✅✅ SAP, Oracle native</td>
+              <td>✅✅ Oracle EBS/Fusion</td>
+              <td>✅✅ SAP S/4HANA native</td>
+              <td>✅ D365, SAP, Oracle, Salesforce</td>
+              <td>✅✅ 200+ connectors</td>
+              <td>✅ 900+ connectors</td>
+              <td>⚠ Limited</td>
+            </tr>
+            <tr>
+              <td class="label">Bahasa Code</td>
+              <td class="aurea-col">Python+JS</td>
+              <td>Java</td>
+              <td>Java/PL-SQL</td>
+              <td>ABAP/Java</td>
+              <td>.NET/SQL</td>
+              <td>Java/C++</td>
+              <td>Java</td>
+              <td>PHP</td>
+            </tr>
+            <tr>
+              <td class="label">Database</td>
+              <td class="aurea-col">PostgreSQL</td>
+              <td>DB2/Oracle</td>
+              <td>Oracle (native)</td>
+              <td>SAP HANA (native)</td>
+              <td>SQL Server/Azure SQL</td>
+              <td>Multi-DB</td>
+              <td>Multi-DB</td>
+              <td>MySQL/MariaDB</td>
+            </tr>
+            <tr>
+              <td class="label">Container (Docker/K8s)</td>
+              <td class="aurea-col">✅ Built-in</td>
+              <td>✅ Yes (Cloud Pak)</td>
+              <td>✅ Yes (OKE)</td>
+              <td>✅ BTP Kyma</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">Multi-domain (unlimited)</td>
+              <td class="aurea-col">✅ Yes</td>
+              <td>✅ Yes (physical)</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes (volume-based)</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: PRICING -->
+    <div class="tab-content" data-content="pricing">
+      <div class="comparison-wrap">
+        <h3>💰 Harga & Total Cost of Ownership</h3>
+        <p class="sub">Perbandingan biaya lisensi, implementasi, dan maintenance 3 tahun (mid-size enterprise, 100 users, 1M records)</p>
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Aspek Biaya</th>
+              <th class="aurea-col">AUREA</th>
+              <th>IBM<br>InfoSphere MDM</th>
+              <th>Oracle<br>EDM</th>
+              <th>SAP MDG</th>
+              <th>Profisee</th>
+              <th>Informatica</th>
+              <th>Talend</th>
+              <th>Pimcore</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="label">Lisensi (Community/OSS)</td>
+              <td class="aurea-col">✅ Gratis</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>❌</td>
+              <td>✅ Gratis</td>
+              <td>✅ Gratis</td>
+            </tr>
+            <tr>
+              <td class="label">Lisensi Enterprise</td>
+              <td class="aurea-col">Rp 50-200 jt/yr</td>
+              <td>$200K-1M+/yr</td>
+              <td>$150K-500K/yr</td>
+              <td>$300K-1.5M/yr</td>
+              <td>$100K-400K/yr</td>
+              <td>$50K-500K/yr</td>
+              <td>$5K-50K/yr</td>
+              <td>$3K-30K/yr</td>
+            </tr>
+            <tr>
+              <td class="label">Implementasi</td>
+              <td class="aurea-col">✅ &lt;1 jam (self-service)</td>
+              <td>❌ 6-12 bulan</td>
+              <td>❌ 6-18 bulan</td>
+              <td>❌ 6-12 bulan</td>
+              <td>✅ 3-6 bulan</td>
+              <td>❌ 3-12 bulan</td>
+              <td>⚠ 1-3 bulan</td>
+              <td>⚠ 1-3 bulan</td>
+            </tr>
+            <tr>
+              <td class="label">Training</td>
+              <td class="aurea-col">✅ YouTube + Docs gratis</td>
+              <td>❌ $20K-100K</td>
+              <td>❌ $20K-80K</td>
+              <td>❌ $30K-150K</td>
+              <td>⚠ $5K-20K</td>
+              <td>❌ $20K-100K</td>
+              <td>⚠ $5K-15K</td>
+              <td>⚠ $3K-10K</td>
+            </tr>
+            <tr>
+              <td class="label">Maintenance/yr</td>
+              <td class="aurea-col">✅ Disertakan</td>
+              <td>⚠ 20% lisensi</td>
+              <td>⚠ 22% lisensi</td>
+              <td>⚠ 22% lisensi</td>
+              <td>⚠ 18% lisensi</td>
+              <td>❌ 25% lisensi</td>
+              <td>⚠ 20%</td>
+              <td>⚠ 20%</td>
+            </tr>
+            <tr>
+              <td class="label">Support 24/7</td>
+              <td class="aurea-col">🟡 Community + Email</td>
+              <td>✅ Yes (premium)</td>
+              <td>✅ Yes (premium)</td>
+              <td>✅ Yes (premium)</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+              <td>✅ Yes</td>
+            </tr>
+            <tr>
+              <td class="label">SLA</td>
+              <td class="aurea-col">Best-effort</td>
+              <td>99.99%</td>
+              <td>99.99%</td>
+              <td>99.99%</td>
+              <td>99.9%</td>
+              <td>99.99%</td>
+              <td>99.9%</td>
+              <td>99.5%</td>
+            </tr>
+            <tr>
+              <td class="label">TCO 3 Tahun (Mid-size)</td>
+              <td class="aurea-col"><b>Rp 600 juta</b></td>
+              <td>$1.5-5M<br>(Rp 22-75M)</td>
+              <td>$1-3M<br>(Rp 15-45M)</td>
+              <td>$2-6M<br>(Rp 30-90M)</td>
+              <td>$500K-1.5M<br>(Rp 7-22M)</td>
+              <td>$500K-2M</td>
+              <td>$100K-300K</td>
+              <td>$50K-200K</td>
+            </tr>
+            <tr>
+              <td class="label">ROI (vs IBM/Oracle/SAP)</td>
+              <td class="aurea-col"><b>10-30x</b></td>
+              <td>1x</td>
+              <td>1x</td>
+              <td>1x</td>
+              <td>3-5x</td>
+              <td>2-4x</td>
+              <td>5-10x</td>
+              <td>8-15x</td>
+            </tr>
+            <tr>
+              <td class="label">Hidden Costs</td>
+              <td class="aurea-col">✅ None</td>
+              <td>⚠ Many</td>
+              <td>⚠ Many</td>
+              <td>⚠ Many</td>
+              <td>⚠ Some</td>
+              <td>⚠ Many</td>
+              <td>⚠ Some</td>
+              <td>⚠ Some</td>
+            </tr>
+            <tr>
+              <td class="label">Hardware Required</td>
+              <td class="aurea-col">✅ Minimal (2 vCPU, 4GB RAM)</td>
+              <td>❌ Heavy (16+ cores, 64GB+)</td>
+              <td>❌ Heavy (Oracle Exadata)</td>
+              <td>❌ HANA-certified hw</td>
+              <td>⚠ Medium (8 cores, 32GB)</td>
+              <td>❌ Heavy</td>
+              <td>⚠ Medium</td>
+              <td>⚠ Medium</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- GAP ANALYSIS -->
+<section id="gap">
+  <div class="container">
+    <div class="section-eyebrow" style="color: var(--warning)">⚠️ GAP ANALYSIS — TRANSPARANSI</div>
+    <h2 class="section-title">Fitur yang ADA di Kompetitor tapi BELUM ADA di AUREA</h2>
+    <p class="section-subtitle">AUREA 4.0 saat ini release. Berikut adalah roadmap Q4 2026 - Q3 2027 untuk menutup gap dengan IBM, Oracle, SAP, dan Profisee. Jujur & transparan — ini bukan marketing, ini realita.</p>
+
+    <div class="gap-grid">
+      <div class="gap-card">
+        <h4>🏛️ Financial Master Data (COA, Cost Center)</h4>
+        <p>Oracle EDM dan SAP MDG adalah juaranya untuk financial hierarchies: chart of accounts, cost center, profit center, legal entity. AUREA fokus ke customer/product/supplier dulu.</p>
+        <p class="who">📅 Roadmap: Q2 2027 (6 bulan) · Dipunyai: Oracle EDM, SAP MDG</p>
+      </div>
+      <div class="gap-card">
+        <h4>📋 Column Mapping UI (Bulk Import)</h4>
+        <p>IBM, Oracle FBDI, SAP, Informatica punya visual mapper drag kolom CSV ↔ field sistem. AUREA pakai format tetap dulu.</p>
+        <p class="who">📅 Roadmap: Q4 2026 (2 bulan) · Dipunyai: Semua kompetitor</p>
+      </div>
+      <div class="gap-card">
+        <h4>📱 Native Mobile App (iOS/Android)</h4>
+        <p>IBM, Oracle, SAP punya native app di App Store. AUREA PWA dulu (installable, offline-capable).</p>
+        <p class="who">📅 Roadmap: Q1 2027 (4 bulan) · Dipunyai: IBM, Oracle, SAP, Profisee</p>
+      </div>
+      <div class="gap-card">
+        <h4>🏥 BPJS Kesehatan Integration</h4>
+        <p>Belum ada MDM global yang punya native BPJS validation. AUREA akan jadi pionir untuk Indonesia.</p>
+        <p class="who">📅 Roadmap: Q1 2027 (3 bulan) · Dipunyai: Belum ada (AUREA pionir)</p>
+      </div>
+      <div class="gap-card">
+        <h4>🩸 AADK (Donor Darah) Integration</h4>
+        <p>Belum ada MDM global yang punya AADK. AUREA akan jadi pionir untuk fitur sosial-unik Indonesia.</p>
+        <p class="who">📅 Roadmap: Q1 2027 (3 bulan) · Dipunyai: Belum ada (AUREA pionir)</p>
+      </div>
+      <div class="gap-card">
+        <h4>🔌 GraphQL API</h4>
+        <p>Informatica, Talend, Pimcore sudah punya GraphQL. AUREA masih REST-only.</p>
+        <p class="who">📅 Roadmap: Q1 2027 (2 bulan) · Dipunyai: Informatica, Talend, Pimcore</p>
+      </div>
+      <div class="gap-card">
+        <h4>🏢 Multi-tenant SaaS (aurea.id)</h4>
+        <p>IBM Cloud Pak, Oracle Cloud, SAP BTP, Profisee SaaS — semua multi-tenant. AUREA self-hosted per instance dulu.</p>
+        <p class="who">📅 Roadmap: Q4 2026 (2 bulan) · Dipunyai: Semua kompetitor</p>
+      </div>
+      <div class="gap-card">
+        <h4>📦 99.99% SLA + 24/7 Support</h4>
+        <p>IBM, Oracle, SAP punya SLA 99.99% + dedicated CSM. AUREA best-effort community dulu.</p>
+        <p class="who">📅 Roadmap: Q4 2026 (Enterprise tier) · Dipunyai: IBM, Oracle, SAP, Profisee</p>
+      </div>
+      <div class="gap-card">
+        <h4>🔐 SOC 2 + ISO 27001 Certification</h4>
+        <p>Profisee sudah certified SOC 2, HIPAA, ISO 27001. IBM/Oracle/SAP punya banyak sertifikasi enterprise. AUREA belum.</p>
+        <p class="who">📅 Roadmap: Q4 2026 (Enterprise tier) · Dipunyai: IBM, Oracle, SAP, Profisee</p>
+      </div>
+      <div class="gap-card">
+        <h4>🤝 Partner/Reseller Module (PRM)</h4>
+        <p>Belum menjadi fokus MDM tradisional. AUREA bisa tambahkan kalau demand ada.</p>
+        <p class="who">📅 Roadmap: Sesuai demand · Dipunyai: Belum ada di MDM murni</p>
+      </div>
+      <div class="gap-card">
+        <h4>🌐 Multi-language (EN/CN/JP)</h4>
+        <p>IBM, Oracle, SAP, Informatica, Talend, Pimcore punya multi-language. AUREA 100% Bahasa Indonesia dulu.</p>
+        <p class="who">📅 Roadmap: Q2 2027 (untuk ekspansi ASEAN) · Dipunyai: Semua global</p>
+      </div>
+      <div class="gap-card">
+        <h4>🛒 SAP S/4HANA Native Connector</h4>
+        <p>IBM, Profisee, SAP MDG sendiri punya native certified connector ke SAP. AUREA pakai REST API universal.</p>
+        <p class="who">📅 Roadmap: Q2 2027 (via partnership) · Dipunyai: IBM, SAP, Profisee</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="section-soft">
+  <div class="container">
+    <div class="section-eyebrow">HARGA TRANSPARAN</div>
+    <h2 class="section-title">Pilih Paket yang Sesuai</h2>
+    <p class="section-subtitle">Mulai gratis untuk individu & startup. Skala ke enterprise saat Anda siap. Tidak ada vendor lock-in, tidak ada biaya tersembunyi.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-name">Community</div>
+        <div class="pricing-price"><span class="currency">Rp</span>0<span class="period">/selamanya</span></div>
+        <p class="pricing-desc">Untuk individu, startup, dan riset</p>
+        <ul class="pricing-features">
+          <li>Semua 16 modul lengkap</li>
+          <li>4 AI engines</li>
+          <li>200 sample customers</li>
+          <li>Dukcapil, DJP, BI FAST demo</li>
+          <li>GitHub public repo</li>
+          <li>Community support (GitHub Issues)</li>
+          <li>Self-hosted (Docker)</li>
+        </ul>
+        <a href="http://localhost:5050/spa-standalone.html" target="_blank" class="btn btn-secondary btn-lg" style="width:100%">🚀 Mulai Sekarang</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-name">Business</div>
+        <div class="pricing-price"><span class="currency">Rp</span>25<span class="period">jt/bulan</span></div>
+        <p class="pricing-desc">Untuk BPR, fintech, dan tim data</p>
+        <ul class="pricing-features">
+          <li>Semua fitur Community</li>
+          <li>Unlimited customers & transactions</li>
+          <li>Production Dukcapil/DJP API</li>
+          <li>Multi-user (5-50 users)</li>
+          <li>Workflow approval 4-step</li>
+          <li>Email support (24 jam)</li>
+          <li>Monthly update</li>
+          <li>Backup & monitoring</li>
+        </ul>
+        <a href="#" class="btn btn-primary btn-lg" style="width:100%">💼 Pilih Business</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-name">Enterprise</div>
+        <div class="pricing-price"><span class="currency">Rp</span>200<span class="period">jt/tahun</span></div>
+        <p class="pricing-desc">Untuk bank, BUMN, dan korporasi</p>
+        <ul class="pricing-features">
+          <li>Semua fitur Business</li>
+          <li>On-premise deployment</li>
+          <li>OJK/BI compliance report</li>
+          <li>Unlimited users & data</li>
+          <li>24/7 phone support</li>
+          <li>99.9% SLA</li>
+          <li>Custom integration</li>
+          <li>Dedicated CSM</li>
+        </ul>
+        <a href="#" class="btn btn-secondary btn-lg" style="width:100%">🏢 Hubungi Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="section-eyebrow">🗓️ ROADMAP TRANSPARAN</div>
+    <h2 class="section-title">AUREA 2026-2027 Roadmap</h2>
+    <p class="section-subtitle">Komitmen kami: tutup gap dengan IBM, Oracle, SAP, dan Profisee dalam 12 bulan, sambil pertahankan keunggulan lokal.</p>
+    <div class="roadmap">
+      <div class="roadmap-step">
+        <div class="roadmap-dot">1</div>
+        <h4>AUREA 4.0 ✅</h4>
+        <p>16 modul, 4 AI engines, Indonesian compliance, full CRUD, audit trail</p>
+        <span class="badge-status done">SEPT 2026</span>
+      </div>
+      <div class="roadmap-step">
+        <div class="roadmap-dot">2</div>
+        <h4>4.1 SaaS + Column Mapping</h4>
+        <p>aurea.id launch, billing system, SOC 2 cert, visual column mapper</p>
+        <span class="badge-status active">Q4 2026</span>
+      </div>
+      <div class="roadmap-step">
+        <div class="roadmap-dot">3</div>
+        <h4>4.2 Mobile + BPJS + GraphQL</h4>
+        <p>Native iOS/Android, BPJS/AADK, GraphQL API, full UU PDP</p>
+        <span class="badge-status next">Q1 2027</span>
+      </div>
+      <div class="roadmap-step">
+        <div class="roadmap-dot">4</div>
+        <h4>5.0 Financial + ASEAN</h4>
+        <p>COA, cost center, SAP connector, multi-language EN/CN</p>
+        <span class="badge-status next">Q2 2027</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container container-narrow">
+    <h2>Mulai Gunakan AUREA Sekarang</h2>
+    <p>100% Gratis, 100% Open Source, 100% Bahasa Indonesia. Setup &lt; 1 jam. Tidak perlu kartu kredit.</p>
+    <div class="hero-cta">
+      <a href="http://localhost:5050/spa-standalone.html" target="_blank" class="btn btn-primary btn-xl">🚀 Coba Live Demo</a>
+      <a href="https://github.com/radianadhic/aurea" target="_blank" class="btn btn-white btn-xl">⭐ Star di GitHub</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <div class="brand-mark">A</div>
+          <div class="footer-brand-name">AUREA.</div>
+        </div>
+        <p class="footer-tag">Platform MDM + CDP + AI pertama di Indonesia. 100% open source, 100% Bahasa Indonesia, 100% compliance dengan UU PDP, OJK, BI, dan Dukcapil. Alternatif modern untuk IBM MDM, Oracle EDM, SAP MDG, dan Profisee.</p>
+      </div>
+      <div>
+        <h5>Produk</h5>
+        <ul>
+          <li><a href="#modules">Modul</a></li>
+          <li><a href="#compliance">Compliance ID</a></li>
+          <li><a href="#comparison">Perbandingan</a></li>
+          <li><a href="#pricing">Harga</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Resources</h5>
+        <ul>
+          <li><a href="http://localhost:5050/spa-standalone.html" target="_blank">Live Demo</a></li>
+          <li><a href="https://github.com/radianadhic/aurea" target="_blank">GitHub</a></li>
+          <li><a href="#">Docs</a></li>
+          <li><a href="#">API Reference</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Perusahaan</h5>
+        <ul>
+          <li><a href="#">Tentang</a></li>
+          <li><a href="#">Kontak</a></li>
+          <li><a href="#">Karir</a></li>
+          <li><a href="#">Press Kit</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Legal</h5>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">UU PDP Compliance</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">MIT License</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 AUREA. Made with ❤️ in Indonesia · 🇮🇩 Jakarta · Bandung · Yogyakarta
+    </div>
+  </div>
+</footer>
+
+<!-- FLOATING CTA -->
+<div class="float-cta">
+  <a href="http://localhost:5050/spa-standalone.html" target="_blank" class="float-btn float-pulse">
+    🚀 Live Demo
+  </a>
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`[data-content="${tab}"]`).classList.add('active');
+  });
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+  });
+});
+
+const navbar = document.querySelector('.navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 20) navbar.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+  else navbar.style.boxShadow = 'none';
+});
+</script>
+</body>
+</html>
